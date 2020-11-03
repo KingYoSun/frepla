@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-frepla-dev-53551-authRole",
+      "UnauthRoleArn": "arn:aws:iam::028095336055:role/amplify-frepla-dev-53551-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::028095336055:role/amplify-frepla-dev-53551-authRole",
+      "Region": "ap-northeast-1",
+      "DeploymentBucketName": "amplify-frepla-dev-53551-deployment",
+      "UnauthRoleName": "amplify-frepla-dev-53551-unauthRole",
+      "StackName": "amplify-frepla-dev-53551",
+      "StackId": "arn:aws:cloudformation:ap-northeast-1:028095336055:stack/amplify-frepla-dev-53551/709847a0-1d96-11eb-93cb-06c1e14cac70",
+      "AmplifyAppId": "d1o8o6z4oy2yos"
+    }
+  }
+}
