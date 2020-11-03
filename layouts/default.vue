@@ -14,7 +14,7 @@
           >
             <v-icon dark>mdi-account-circle</v-icon>
           </v-avatar>
-          <span class="mx-2">{{currentUserInfo.attributes.email}}</span>
+          <span class="mx-2">{{$store.state.currentUserInfo.attributes.email}}</span>
         </div>
         <amplify-sign-out class="mx-auto" v-if="isLoggedIn" />
       </v-list>
@@ -95,7 +95,6 @@ export default {
       ],
       title: 'FrePla',
       isLoggedIn: false,
-      currentUserInfo: {},
       defaultContainerStyle: {
         maxWidth: "1200px",
         minWidth: null,
@@ -149,8 +148,12 @@ export default {
     },
     async getUserInfo () {
       const currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+      this.$store.commit('login', currentUserInfo)
       this.isLoggedIn = Boolean(currentUserInfo)
-      this.currentUserInfo = (this.isLoggedIn) ? currentUserInfo : {}
+    },
+    logout () {
+      this.$store.commit('logout')
+      this.isLoggedIn = false
     }
   },
   computed: {

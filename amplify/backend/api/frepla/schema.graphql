@@ -3,3 +3,12 @@ type Profile @model {
   name: String!
   description: String
 }
+
+type Message @model @key(fields: ["fromUserId", "toUserId"]) {
+  fromUserId: String!
+  toUserId: String!
+  message: String!
+  ttl: AWSTimestamp! @ttl
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}

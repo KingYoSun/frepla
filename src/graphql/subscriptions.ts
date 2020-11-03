@@ -35,3 +35,39 @@ export const onDeleteProfile = /* GraphQL */ `
     }
   }
 `;
+export const onCreateMessage = /* GraphQL */ `
+  subscription OnCreateMessage {
+    onCreateMessage {
+      fromUserId
+      toUserId
+      message
+      ttl
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateMessage = /* GraphQL */ `
+  subscription OnUpdateMessage {
+    onUpdateMessage {
+      fromUserId
+      toUserId
+      message
+      ttl
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteMessage = /* GraphQL */ `
+  subscription OnDeleteMessage {
+    onDeleteMessage {
+      fromUserId
+      toUserId
+      message
+      ttl
+      createdAt
+      updatedAt
+    }
+  }
+`;

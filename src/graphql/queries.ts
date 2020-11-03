@@ -31,3 +31,44 @@ export const listProfiles = /* GraphQL */ `
     }
   }
 `;
+export const getMessage = /* GraphQL */ `
+  query GetMessage($fromUserId: String!, $toUserId: String!) {
+    getMessage(fromUserId: $fromUserId, toUserId: $toUserId) {
+      fromUserId
+      toUserId
+      message
+      ttl
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listMessages = /* GraphQL */ `
+  query ListMessages(
+    $fromUserId: String
+    $toUserId: ModelStringKeyConditionInput
+    $filter: ModelMessageFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listMessages(
+      fromUserId: $fromUserId
+      toUserId: $toUserId
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        fromUserId
+        toUserId
+        message
+        ttl
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
