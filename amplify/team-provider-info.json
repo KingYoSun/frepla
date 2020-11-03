@@ -10,6 +10,11 @@
       "StackName": "amplify-frepla-dev-53551",
       "StackId": "arn:aws:cloudformation:ap-northeast-1:028095336055:stack/amplify-frepla-dev-53551/709847a0-1d96-11eb-93cb-06c1e14cac70",
       "AmplifyAppId": "d1o8o6z4oy2yos"
+    },
+    "categories": {
+      "auth": {
+        "frepla87b6b9a0": {}
+      }
     }
   }
 }
