@@ -9,8 +9,8 @@ export default {
 
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    titleTemplate: '%s - frepla',
-    title: 'frepla',
+    titleTemplate: '%s - FrePla',
+    title: 'FrePla',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -23,7 +23,9 @@ export default {
   css: [],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: [],
+  plugins: [
+    { src: '~/plugins/amplify.js', mode: 'client'}
+  ],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,

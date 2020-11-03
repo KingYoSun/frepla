@@ -2,14 +2,29 @@
   <v-app dark>
     <v-navigation-drawer
       v-model="drawer"
-      :mini-variant="miniVariant"
       :clipped="clipped"
-      fixed
+      fixied
       app
     >
-      <v-list>
+      <v-list class="pa-1" v-if="isLoggedIn">
+        <div style="display: flex;flex-wrap: nowrap;align-items: center;">
+          <v-avatar
+            color="indigo"
+            size="40"
+          >
+            <v-icon dark>mdi-account-circle</v-icon>
+          </v-avatar>
+          <span class="mx-2">{{currentUserInfo.attributes.email}}</span>
+        </div>
+        <amplify-sign-out class="mx-auto" v-if="isLoggedIn" />
+      </v-list>
+      <v-list class="pt-2" dense>
+        <v-btn class="ml-4" text nuxt to="/signin" v-if="!isLoggedIn">サインイン</v-btn>
+      </v-list>
+      <v-list class="pt-2" dense>
+        <v-divider></v-divider>
         <v-list-item
-          v-for="(item, i) in items"
+          v-for="(item, i) in filteredItems"
           :key="i"
           :to="item.to"
           router
@@ -26,9 +41,6 @@
     </v-navigation-drawer>
     <v-app-bar :clipped-left="clipped" fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn icon @click.stop="miniVariant = !miniVariant">
-        <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
-      </v-btn>
       <v-btn icon @click.stop="clipped = !clipped">
         <v-icon>mdi-application</v-icon>
       </v-btn>
@@ -36,56 +48,129 @@
         <v-icon>mdi-minus</v-icon>
       </v-btn>
       <v-toolbar-title v-text="title" />
-      <v-spacer />
-      <v-btn icon @click.stop="rightDrawer = !rightDrawer">
-        <v-icon>mdi-menu</v-icon>
-      </v-btn>
     </v-app-bar>
+
     <v-main>
-      <v-container>
+      <v-container class="my-6" :style="containerStyle">
         <nuxt />
       </v-container>
     </v-main>
-    <v-navigation-drawer v-model="rightDrawer" :right="right" temporary fixed>
-      <v-list>
-        <v-list-item @click.native="right = !right">
-          <v-list-item-action>
-            <v-icon light> mdi-repeat </v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Switch drawer (click me)</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-    <v-footer :absolute="!fixed" app>
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+    
+    <v-footer
+      class="main-footer"
+      absolute
+      :fixed="fixed"
+      app
+    >
+      <div style="margin: 0 auto;">
+        <span>&copy; 2020 KingYoSun</span>
+      </div>
     </v-footer>
   </v-app>
 </template>
 
 <script>
+import { AmplifyEventBus } from 'aws-amplify-vue'
 export default {
-  data() {
+  data () {
     return {
-      clipped: false,
+      backgroundColor: "gray darken-4",
       drawer: false,
+      userMenu: null,
       fixed: false,
+      clipped: false,
       items: [
         {
-          icon: 'mdi-apps',
-          title: 'Welcome',
+          icon: 'mdi-home',
+          title: 'ホーム',
           to: '/',
+          status: ['loggedIn']
         },
         {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire',
-        },
+          icon: 'mdi-account',
+          title: 'プロフィール',
+          to: '/profile',
+          status: ['loggedIn']
+        }
       ],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Vuetify.js',
+      title: 'FrePla',
+      isLoggedIn: false,
+      currentUserInfo: {},
+      defaultContainerStyle: {
+        maxWidth: "1200px",
+        minWidth: null,
+        backgroundColor: "gray-darken-3",
+        borderRadius: "10px",
+        boxShadow: "2px 2px 8px #000000; -2px -2px 8px #000000;"
+      },
+      containerStyle: {}
     }
   },
+  async beforeCreate() {
+    AmplifyEventBus.$on('authState', (info) => {
+      if (info === 'signedIn') {
+        this.$router.push('/')
+        this.getUserInfo()
+      } else if (info === 'signedOut') {
+        this.$router.push('/signin')
+        this.getUserInfo()
+      }
+    })
+  },
+  created () {
+    this.containerStyle = JSON.parse(JSON.stringify(this.defaultContainerStyle))
+    this.setListener()
+    this.getUserInfo()
+  },
+  methods: {
+    setListener () {
+      this.$nuxt.$on('defineContainerStyle', this.defineContainerStyle)
+      this.$nuxt.$on('resetContainerStyle', this.resetContainerStyle)
+    },
+    resetContainerStyle () {
+      this.containerStyle = JSON.parse(JSON.stringify(this.defaultContainerStyle))
+    },
+    defineContainerStyle (style) {
+      if ("maxWidth" in style) {
+        this.containerStyle.maxWidth = style.maxWidth
+      }
+      if ("minWidth" in style) {
+        this.containerStyle.minWidth = style.minWidth
+      }
+      if ("backgroundColor" in style) {
+        this.containerStyle.backgroundColor = style.backgroundColor
+      }
+      if ("borderRadius" in style) {
+        this.containerStyle.borderRadius = style.borderRadius
+      }
+      if ("boxShadow" in style) {
+        this.containerStyle.boxShadow = style.boxShadow
+      }
+    },
+    async getUserInfo () {
+      const currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+      this.isLoggedIn = Boolean(currentUserInfo)
+      this.currentUserInfo = (this.isLoggedIn) ? currentUserInfo : {}
+    }
+  },
+  computed: {
+    filteredItems () {
+      const self = this
+      return self.items.filter((item) => {
+        if (self.isLoggedIn) {
+          return item.status.indexOf('loggedIn') !== -1
+        } else {
+          return item.status.indexOf('loggedOut') !== -1
+        }
+      })
+    }
+  }
 }
 </script>
+
+<style>
+.main-footer {
+  background-color: #616161;
+  box-shadow: 5px 5px 20px black;
+}
+</style>
