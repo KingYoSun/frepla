@@ -70,10 +70,14 @@
 </template>
 
 <script>
+import API, { graphqlOperation } from '@aws-amplify/api'
 import { AmplifyEventBus } from 'aws-amplify-vue'
+
 export default {
   data () {
     return {
+      currentUserInfo: null,
+      exitProfile: false,
       backgroundColor: "gray darken-4",
       drawer: false,
       userMenu: null,
@@ -110,9 +114,10 @@ export default {
       if (info === 'signedIn') {
         this.$router.push('/')
         this.getUserInfo()
+        this.getProfile()
       } else if (info === 'signedOut') {
         this.$router.push('/signin')
-        this.getUserInfo()
+        this.logout()
       }
     })
   },
@@ -147,14 +152,62 @@ export default {
       }
     },
     async getUserInfo () {
-      const currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
-      this.$store.commit('login', currentUserInfo)
-      this.isLoggedIn = Boolean(currentUserInfo)
+      this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+      this.$store.commit('login', this.currentUserInfo)
+      this.isLoggedIn = Boolean(this.currentUserInfo)
     },
     logout () {
       this.$store.commit('logout')
       this.isLoggedIn = false
-    }
+    },
+    async getProfile () {
+            const currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+            const getProfile = `
+                query GetProfile {
+                    getProfile(id: "${currentUserInfo.attributes.sub}") {
+                        id
+                    }
+                }
+            `
+            try {
+                await API.graphql(graphqlOperation(getProfile))
+                    .then((res) => {
+                        items = res.data.getProfile
+                        if (!items.length) {
+                           throw "Profile not found"
+                        }
+                        this.exitProfile = true
+                    })
+            } catch (e) {
+                console.log("Profile not found: " + e)
+                this.createProfile(currentUserInfo)
+            }
+        },
+    async createProfile (currentUserInfo) {
+            const createProfile = `
+            mutation CreateProfile {
+                createProfile(input: {
+                    id: "${currentUserInfo.attributes.sub}",
+                    name: "${currentUserInfo.username}",
+                    email: "${currentUserInfo.attributes.email}",
+                    description: ""
+                }) {
+                id
+                name
+                email
+                description
+                }
+            }
+            `
+            try {
+                API.graphql(graphqlOperation(createProfile))
+                    .then((res)=> {
+                        console.log("プロフィールを作成しました")
+                    })
+            } catch (e) {
+                console.log("プロフィールの作成に失敗しました: " + e)
+            }
+        },
   },
   computed: {
     filteredItems () {

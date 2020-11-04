@@ -19,20 +19,21 @@
             </v-row>
           </div>
           <div>
-            <v-form v-model="valid" @submit.prevent>
+            <v-form ref="formMessage" @submit.prevent>
               <v-row>
                 <v-text-field
                 v-model="sendMessage"
                 class="mx-4"
                 label="message"
-                @keyup.enter="mutateMessage"
+                :rules="[required]"
+                @keyup.enter="validation"
                 >
                 </v-text-field>
                 <v-btn
                 color="primary"
                 dark
                 class="mr-4"
-                @click="mutateMessage"
+                @click="validation"
                 >
                 SEND
                 </v-btn>
@@ -57,10 +58,10 @@ export default {
   },
   data () {
     return {
-      valid: false,
       sendMessage: "",
       messages: [],
-      subscription: null
+      subscription: null,
+      required: value => !!value || "必須事項です",
     }
   },
   created () {
@@ -77,6 +78,16 @@ export default {
       const unixtimenow = Math.floor(date.getTime() / 1000)
       const timeToLive = unixtimenow + 3600
       return timeToLive
+    },
+    validation () {
+      try {
+        if(!this.$refs.formMessage.validate()) {
+          throw "ExceptionOccured"
+        }
+        this.mutateMessage()
+      } catch (e) {
+        console.log(e)
+      }
     },
     async mutateMessage () {
       const createMessage = `
