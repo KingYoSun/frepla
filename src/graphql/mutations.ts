@@ -10,6 +10,7 @@ export const createProfile = /* GraphQL */ `
     createProfile(input: $input, condition: $condition) {
       id
       name
+      email
       description
       createdAt
       updatedAt
@@ -24,6 +25,7 @@ export const updateProfile = /* GraphQL */ `
     updateProfile(input: $input, condition: $condition) {
       id
       name
+      email
       description
       createdAt
       updatedAt
@@ -38,6 +40,7 @@ export const deleteProfile = /* GraphQL */ `
     deleteProfile(input: $input, condition: $condition) {
       id
       name
+      email
       description
       createdAt
       updatedAt
@@ -84,6 +87,48 @@ export const deleteMessage = /* GraphQL */ `
       toUserId
       message
       ttl
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createFriend = /* GraphQL */ `
+  mutation CreateFriend(
+    $input: CreateFriendInput!
+    $condition: ModelFriendConditionInput
+  ) {
+    createFriend(input: $input, condition: $condition) {
+      id
+      status
+      toUserId
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateFriend = /* GraphQL */ `
+  mutation UpdateFriend(
+    $input: UpdateFriendInput!
+    $condition: ModelFriendConditionInput
+  ) {
+    updateFriend(input: $input, condition: $condition) {
+      id
+      status
+      toUserId
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteFriend = /* GraphQL */ `
+  mutation DeleteFriend(
+    $input: DeleteFriendInput!
+    $condition: ModelFriendConditionInput
+  ) {
+    deleteFriend(input: $input, condition: $condition) {
+      id
+      status
+      toUserId
       createdAt
       updatedAt
     }

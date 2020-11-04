@@ -7,6 +7,7 @@ export const getProfile = /* GraphQL */ `
     getProfile(id: $id) {
       id
       name
+      email
       description
       createdAt
       updatedAt
@@ -23,6 +24,7 @@ export const listProfiles = /* GraphQL */ `
       items {
         id
         name
+        email
         description
         createdAt
         updatedAt
@@ -65,6 +67,45 @@ export const listMessages = /* GraphQL */ `
         toUserId
         message
         ttl
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const getFriend = /* GraphQL */ `
+  query GetFriend($id: String!, $status: String!) {
+    getFriend(id: $id, status: $status) {
+      id
+      status
+      toUserId
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listFriends = /* GraphQL */ `
+  query ListFriends(
+    $id: String
+    $status: ModelStringKeyConditionInput
+    $filter: ModelFriendFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listFriends(
+      id: $id
+      status: $status
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        id
+        status
+        toUserId
         createdAt
         updatedAt
       }

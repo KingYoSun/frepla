@@ -3,13 +3,15 @@
 //  This file was automatically generated and should not be edited.
 
 export type CreateProfileInput = {
-  id?: string | null,
+  id: string,
   name: string,
+  email: string,
   description?: string | null,
 };
 
 export type ModelProfileConditionInput = {
   name?: ModelStringInput | null,
+  email?: ModelStringInput | null,
   description?: ModelStringInput | null,
   and?: Array< ModelProfileConditionInput | null > | null,
   or?: Array< ModelProfileConditionInput | null > | null,
@@ -59,6 +61,7 @@ export type ModelSizeInput = {
 export type UpdateProfileInput = {
   id: string,
   name?: string | null,
+  email?: string | null,
   description?: string | null,
 };
 
@@ -111,29 +114,38 @@ export type DeleteMessageInput = {
   toUserId: string,
 };
 
+export type CreateFriendInput = {
+  id: string,
+  status: string,
+  toUserId: string,
+};
+
+export type ModelFriendConditionInput = {
+  toUserId?: ModelStringInput | null,
+  and?: Array< ModelFriendConditionInput | null > | null,
+  or?: Array< ModelFriendConditionInput | null > | null,
+  not?: ModelFriendConditionInput | null,
+};
+
+export type UpdateFriendInput = {
+  id: string,
+  status: string,
+  toUserId?: string | null,
+};
+
+export type DeleteFriendInput = {
+  id: string,
+  status: string,
+};
+
 export type ModelProfileFilterInput = {
-  id?: ModelIDInput | null,
+  id?: ModelStringInput | null,
   name?: ModelStringInput | null,
+  email?: ModelStringInput | null,
   description?: ModelStringInput | null,
   and?: Array< ModelProfileFilterInput | null > | null,
   or?: Array< ModelProfileFilterInput | null > | null,
   not?: ModelProfileFilterInput | null,
-};
-
-export type ModelIDInput = {
-  ne?: string | null,
-  eq?: string | null,
-  le?: string | null,
-  lt?: string | null,
-  ge?: string | null,
-  gt?: string | null,
-  contains?: string | null,
-  notContains?: string | null,
-  between?: Array< string | null > | null,
-  beginsWith?: string | null,
-  attributeExists?: boolean | null,
-  attributeType?: ModelAttributeTypes | null,
-  size?: ModelSizeInput | null,
 };
 
 export type ModelStringKeyConditionInput = {
@@ -164,6 +176,15 @@ export enum ModelSortDirection {
 }
 
 
+export type ModelFriendFilterInput = {
+  id?: ModelStringInput | null,
+  status?: ModelStringInput | null,
+  toUserId?: ModelStringInput | null,
+  and?: Array< ModelFriendFilterInput | null > | null,
+  or?: Array< ModelFriendFilterInput | null > | null,
+  not?: ModelFriendFilterInput | null,
+};
+
 export type CreateProfileMutationVariables = {
   input: CreateProfileInput,
   condition?: ModelProfileConditionInput | null,
@@ -174,6 +195,7 @@ export type CreateProfileMutation = {
     __typename: "Profile",
     id: string,
     name: string,
+    email: string,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -190,6 +212,7 @@ export type UpdateProfileMutation = {
     __typename: "Profile",
     id: string,
     name: string,
+    email: string,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -206,6 +229,7 @@ export type DeleteProfileMutation = {
     __typename: "Profile",
     id: string,
     name: string,
+    email: string,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -263,6 +287,54 @@ export type DeleteMessageMutation = {
   } | null,
 };
 
+export type CreateFriendMutationVariables = {
+  input: CreateFriendInput,
+  condition?: ModelFriendConditionInput | null,
+};
+
+export type CreateFriendMutation = {
+  createFriend:  {
+    __typename: "Friend",
+    id: string,
+    status: string,
+    toUserId: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateFriendMutationVariables = {
+  input: UpdateFriendInput,
+  condition?: ModelFriendConditionInput | null,
+};
+
+export type UpdateFriendMutation = {
+  updateFriend:  {
+    __typename: "Friend",
+    id: string,
+    status: string,
+    toUserId: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteFriendMutationVariables = {
+  input: DeleteFriendInput,
+  condition?: ModelFriendConditionInput | null,
+};
+
+export type DeleteFriendMutation = {
+  deleteFriend:  {
+    __typename: "Friend",
+    id: string,
+    status: string,
+    toUserId: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
 export type GetProfileQueryVariables = {
   id: string,
 };
@@ -272,6 +344,7 @@ export type GetProfileQuery = {
     __typename: "Profile",
     id: string,
     name: string,
+    email: string,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -291,6 +364,7 @@ export type ListProfilesQuery = {
       __typename: "Profile",
       id: string,
       name: string,
+      email: string,
       description: string | null,
       createdAt: string,
       updatedAt: string,
@@ -341,11 +415,52 @@ export type ListMessagesQuery = {
   } | null,
 };
 
+export type GetFriendQueryVariables = {
+  id: string,
+  status: string,
+};
+
+export type GetFriendQuery = {
+  getFriend:  {
+    __typename: "Friend",
+    id: string,
+    status: string,
+    toUserId: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListFriendsQueryVariables = {
+  id?: string | null,
+  status?: ModelStringKeyConditionInput | null,
+  filter?: ModelFriendFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
+};
+
+export type ListFriendsQuery = {
+  listFriends:  {
+    __typename: "ModelFriendConnection",
+    items:  Array< {
+      __typename: "Friend",
+      id: string,
+      status: string,
+      toUserId: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken: string | null,
+  } | null,
+};
+
 export type OnCreateProfileSubscription = {
   onCreateProfile:  {
     __typename: "Profile",
     id: string,
     name: string,
+    email: string,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -357,6 +472,7 @@ export type OnUpdateProfileSubscription = {
     __typename: "Profile",
     id: string,
     name: string,
+    email: string,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -368,6 +484,7 @@ export type OnDeleteProfileSubscription = {
     __typename: "Profile",
     id: string,
     name: string,
+    email: string,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -407,5 +524,38 @@ export type OnDeleteMessageSubscription = {
     ttl: number,
     createdAt: string | null,
     updatedAt: string | null,
+  } | null,
+};
+
+export type OnCreateFriendSubscription = {
+  onCreateFriend:  {
+    __typename: "Friend",
+    id: string,
+    status: string,
+    toUserId: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateFriendSubscription = {
+  onUpdateFriend:  {
+    __typename: "Friend",
+    id: string,
+    status: string,
+    toUserId: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteFriendSubscription = {
+  onDeleteFriend:  {
+    __typename: "Friend",
+    id: string,
+    status: string,
+    toUserId: string,
+    createdAt: string,
+    updatedAt: string,
   } | null,
 };

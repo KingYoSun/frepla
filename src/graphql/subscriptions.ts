@@ -7,6 +7,7 @@ export const onCreateProfile = /* GraphQL */ `
     onCreateProfile {
       id
       name
+      email
       description
       createdAt
       updatedAt
@@ -18,6 +19,7 @@ export const onUpdateProfile = /* GraphQL */ `
     onUpdateProfile {
       id
       name
+      email
       description
       createdAt
       updatedAt
@@ -29,6 +31,7 @@ export const onDeleteProfile = /* GraphQL */ `
     onDeleteProfile {
       id
       name
+      email
       description
       createdAt
       updatedAt
@@ -66,6 +69,39 @@ export const onDeleteMessage = /* GraphQL */ `
       toUserId
       message
       ttl
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onCreateFriend = /* GraphQL */ `
+  subscription OnCreateFriend {
+    onCreateFriend {
+      id
+      status
+      toUserId
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateFriend = /* GraphQL */ `
+  subscription OnUpdateFriend {
+    onUpdateFriend {
+      id
+      status
+      toUserId
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteFriend = /* GraphQL */ `
+  subscription OnDeleteFriend {
+    onDeleteFriend {
+      id
+      status
+      toUserId
       createdAt
       updatedAt
     }

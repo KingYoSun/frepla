@@ -14,7 +14,7 @@
           >
             <v-icon dark>mdi-account-circle</v-icon>
           </v-avatar>
-          <span class="mx-2">{{$store.state.currentUserInfo.attributes.email}}</span>
+          <span class="mx-2">{{$store.state.currentUserInfo.username}}</span>
         </div>
         <amplify-sign-out class="mx-auto" v-if="isLoggedIn" />
       </v-list>

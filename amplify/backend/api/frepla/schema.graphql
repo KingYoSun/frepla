@@ -1,6 +1,7 @@
 type Profile @model {
-  id: ID!
+  id: String!
   name: String!
+  email: AWSEmail!
   description: String
 }
 
@@ -11,4 +12,10 @@ type Message @model @key(fields: ["fromUserId", "toUserId"]) {
   ttl: AWSTimestamp! @ttl
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+}
+
+type Friend @model @key(fields: ["id", "status"]) {
+  id: String!
+  status: String!
+  toUserId: String!
 }
