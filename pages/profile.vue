@@ -12,7 +12,7 @@
                 <v-text-field
                 v-model="username"
                 label="ユーザー名"
-                :rule="[required]"
+                :rules="[required]"
                 disabled
                 />
             </v-row>
@@ -20,9 +20,16 @@
                 <v-text-field
                 v-model="email"
                 label="メールアドレス"
-                :rule="[required]"
+                :rules="[required]"
                 disabled
                 />
+                <v-btn
+                color="teal"
+                nuxt
+                to="/changeEmail"
+                >
+                変更する
+                </v-btn>
             </v-row>
             <v-row justify="center">
                 <v-textarea
@@ -37,7 +44,7 @@
                     class="mr-4"
                     @click="validation"
                     >
-                    SEND
+                    変更
                 </v-btn>
             </v-row>
         </v-form>
@@ -135,7 +142,7 @@ export default {
             }
             `
             try {
-                API.graphql(graphqlOperation(updateProfile))
+                await API.graphql(graphqlOperation(updateProfile))
                     .then((res)=> {
                         console.log("succeded")
                         this.showDialog = true
