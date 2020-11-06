@@ -99,6 +99,12 @@ export default {
           title: 'プロフィール',
           to: '/profile',
           status: ['loggedIn']
+        },
+        {
+          icon: 'mdi-account-multiple-plus',
+          title: 'フレンド',
+          to: '/friends',
+          status: ['loggedIn']
         }
       ],
       title: 'FrePla',
