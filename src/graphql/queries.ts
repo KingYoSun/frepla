@@ -8,6 +8,7 @@ export const getProfile = /* GraphQL */ `
       id
       name
       email
+      iconUrl
       description
       createdAt
       updatedAt
@@ -25,6 +26,7 @@ export const listProfiles = /* GraphQL */ `
         id
         name
         email
+        iconUrl
         description
         createdAt
         updatedAt
@@ -132,6 +134,7 @@ export const profileByName = /* GraphQL */ `
         id
         name
         email
+        iconUrl
         description
         createdAt
         updatedAt

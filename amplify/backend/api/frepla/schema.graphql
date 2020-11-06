@@ -2,6 +2,7 @@ type Profile @model @key(name: "byName", fields: ["name"], queryField: "profileB
   id: String!
   name: String!
   email: AWSEmail!
+  iconUrl: String
   description: String
 }
 
