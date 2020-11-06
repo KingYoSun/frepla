@@ -138,7 +138,6 @@ export default {
         async updateEmail () {
             this.overlay = true
             const user = await Auth.currentAuthenticatedUser()
-            console.log(user)
             try {
                 await Auth.updateUserAttributes(
                     user,

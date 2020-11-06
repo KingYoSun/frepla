@@ -47,7 +47,11 @@
       <v-btn icon @click.stop="fixed = !fixed">
         <v-icon>mdi-minus</v-icon>
       </v-btn>
-      <v-toolbar-title v-text="title" />
+      <nuxt-link
+      style="text-decoration: none;color: white;"
+      to="/">
+      <h3>FrePla</h3>
+      </nuxt-link>
     </v-app-bar>
 
     <v-main>

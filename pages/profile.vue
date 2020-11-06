@@ -39,12 +39,19 @@
             </v-row>
             <v-row justify="start">
                 <v-btn
-                    color="primary"
-                    dark
-                    class="mr-4"
-                    @click="validation"
-                    >
-                    変更
+                color="primary"
+                dark
+                class="mr-4"
+                @click="validation"
+                >
+                プロフィールを更新
+                </v-btn>
+                <v-btn
+                color="teal"
+                nuxt
+                to="/changePass"
+                >
+                パスワードを変更する
                 </v-btn>
             </v-row>
         </v-form>
