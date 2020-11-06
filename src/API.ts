@@ -455,6 +455,30 @@ export type ListFriendsQuery = {
   } | null,
 };
 
+export type ProfileByNameQueryVariables = {
+  name?: string | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelProfileFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ProfileByNameQuery = {
+  profileByName:  {
+    __typename: "ModelProfileConnection",
+    items:  Array< {
+      __typename: "Profile",
+      id: string,
+      name: string,
+      email: string,
+      description: string | null,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken: string | null,
+  } | null,
+};
+
 export type OnCreateProfileSubscription = {
   onCreateProfile:  {
     __typename: "Profile",

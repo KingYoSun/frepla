@@ -113,3 +113,30 @@ export const listFriends = /* GraphQL */ `
     }
   }
 `;
+export const profileByName = /* GraphQL */ `
+  query ProfileByName(
+    $name: String
+    $sortDirection: ModelSortDirection
+    $filter: ModelProfileFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    profileByName(
+      name: $name
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        name
+        email
+        description
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;

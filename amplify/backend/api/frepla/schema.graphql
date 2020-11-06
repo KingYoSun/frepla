@@ -1,4 +1,4 @@
-type Profile @model {
+type Profile @model @key(name: "byName", fields: ["name"], queryField: "profileByName"){
   id: String!
   name: String!
   email: AWSEmail!
