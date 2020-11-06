@@ -12,7 +12,15 @@
             color="indigo"
             size="40"
           >
-            <v-icon dark>mdi-account-circle</v-icon>
+            <v-icon dark v-if="!showPreviewImg">mdi-account-circle</v-icon>
+            <v-img
+            :src="imgPreview"
+            v-if="showPreviewImg"
+            alt="商品画像のプレビュー"
+            @error="showPreviewImg = false"
+            class="profileIcon"
+            :max-width="50"
+            />
           </v-avatar>
           <span class="mx-2">{{$store.state.currentUserInfo.username}}</span>
         </div>
@@ -75,6 +83,7 @@
 
 <script>
 import API, { graphqlOperation } from '@aws-amplify/api'
+import Storage from '@aws-amplify/storage'
 import { AmplifyEventBus } from 'aws-amplify-vue'
 
 export default {
@@ -87,6 +96,9 @@ export default {
       userMenu: null,
       fixed: false,
       clipped: false,
+      imgURL: null,
+      imgPreview: null,
+      showPreviewImg: false,
       items: [
         {
           icon: 'mdi-home',
@@ -124,7 +136,6 @@ export default {
       if (info === 'signedIn') {
         this.$router.push('/')
         this.getUserInfo()
-        this.getProfile()
       } else if (info === 'signedOut') {
         this.$router.push('/signin')
         this.logout()
@@ -165,34 +176,56 @@ export default {
       this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
       this.$store.commit('login', this.currentUserInfo)
       this.isLoggedIn = Boolean(this.currentUserInfo)
+      if (this.isLoggedIn) {
+        this.getProfile()
+      }
     },
     logout () {
       this.$store.commit('logout')
       this.isLoggedIn = false
     },
     async getProfile () {
-            const currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
-            const getProfile = `
-                query GetProfile {
-                    getProfile(id: "${currentUserInfo.attributes.sub}") {
-                        id
-                    }
+        const currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+        const getProfile = `
+            query GetProfile {
+                getProfile(id: "${currentUserInfo.attributes.sub}") {
+                    id
+                    iconUrl
                 }
-            `
+            }
+        `
+        try {
+            await API.graphql(graphqlOperation(getProfile))
+                .then((res) => {
+                    const items = res.data.getProfile
+                    if (items == null || items == undefined || items == []) {
+                        throw "Profile not found"
+                    }
+                    this.exitProfile = true
+                    this.imgURL = ("iconUrl" in items) ? items.iconUrl : null
+                    this.setImgFile()
+                })
+        } catch (e) {
+            console.log("Profile not found: " + e)
+            this.createProfile(currentUserInfo)
+        }
+    },
+    setImgFile () {
+        if (this.imgURL !== null && this.imgURL !== 'null') {
             try {
-                await API.graphql(graphqlOperation(getProfile))
+                Storage.get(this.imgURL, {level: 'protected'})
                     .then((res) => {
-                        items = res.data.getProfile
-                        if (!items.length) {
-                           throw "Profile not found"
-                        }
-                        this.exitProfile = true
+                        this.imgPreview = res
+                        this.showPreviewImg = true
+                    })
+                    .catch((e) => {
+                        console.log("Getting Image Failed: " + e)
                     })
             } catch (e) {
-                console.log("Profile not found: " + e)
-                this.createProfile(currentUserInfo)
+                console.log("Getting Image Failed: " + e)
             }
-        },
+        }
+    },
     async createProfile (currentUserInfo) {
             const createProfile = `
             mutation CreateProfile {

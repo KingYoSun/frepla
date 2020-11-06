@@ -20,7 +20,7 @@
                 fab
                 small
                 class="mx-2"
-                color="cyan"
+                color="indigo"
                 @click="searchUsers"
                 >
                 <v-icon dark>

@@ -8,6 +8,24 @@
         @agree="showDialog = !showDialog"
         />
         <v-form ref="formProfile" @submit.prevent>
+            <v-row v-if="showPreviewImg" justify="center">
+                <v-img
+                :src="imgPreview"
+                alt="商品画像のプレビュー"
+                @error="resetImgURL"
+                class="profileIcon"
+                :max-width="250"
+                />
+            </v-row>
+            <v-row>
+                <v-file-input
+                show-size
+                accept="image/*"
+                label="アイコン"
+                :rules="[maxFileSize]"
+                @change="storeImg"
+                />
+            </v-row>
             <v-row justify="center">
                 <v-text-field
                 v-model="username"
@@ -60,6 +78,7 @@
 
 <script>
 import API, { graphqlOperation } from '@aws-amplify/api'
+import Storage from '@aws-amplify/storage'
 import CustomOverlay from '~/components/overlay.vue'
 import CustomDialog from '~/components/dialog.vue'
 
@@ -77,7 +96,13 @@ export default {
             username: "",
             email: "",
             description: "",
+            imgURL: null,
+            imgFile: null,
+            imgType: null,
+            imgPreview: null,
+            showPreviewImg: false,
             required: value => !!value || "必須事項です",
+            maxFileSize: value => !value || value.size < 3*1024*1024 || 'ファイルサイズは3MB以下にしてください'
         }
     },
     async created () {
@@ -100,7 +125,7 @@ export default {
                 if(!this.$refs.formProfile.validate()) {
                 throw "ExceptionOccured"
                 }
-                 this.updateProfile()
+                 this.startUpdateProfile()
             } catch (e) {
                 console.log(e)
             }
@@ -114,6 +139,7 @@ export default {
                         name
                         email
                         description
+                        iconUrl
                         createdAt
                         updatedAt
                     }
@@ -124,12 +150,99 @@ export default {
                     .then((res) => {
                         const items = res.data.getProfile
                         this.description = ("description" in items) ? items.description : ""
+                        this.imgURL = ("iconUrl" in items) ? items.iconUrl : null
+                        this.setImgFile()
                     })
             } catch (e) {
                 console.log(e)
                 this.description = ""
             }
+        },
+        resetImgURL () {
+            this.showPreviewImg = false
+            this.imgURL = null
+            this.imgFile = null
+        },
+        setImgFile () {
+            if (this.imgURL !== null && this.imgURL !== 'null') {
+                try {
+                    Storage.get(this.imgURL, {level: 'protected'})
+                        .then((res) => {
+                            this.imgPreview = res
+                            this.showPreviewImg = true
+                        })
+                        .catch((e) => {
+                            console.log("Getting Image Failed: " + e)
+                        })
+                } catch (e) {
+                    console.log("Getting Image Failed: " + e)
+                }
+            }
             this.overlay = false
+        },
+        storeImg (file) {
+            this.imgPreview = null
+            this.imgFile = null
+            this.showPreviewImg = false
+            try{
+                if (file == undefined || file == null || file.name.lastIndexOf('.') <= 0) {
+                    throw "ExceptionOccured"
+                }
+                const image = file
+                this.imgFile = image
+                this.imgType = image.type
+                const reader = new FileReader()
+                reader.readAsDataURL(image)
+                reader.onload = () => {
+                    this.imgPreview = reader.result
+                    this.showPreviewImg = true
+                }
+            } catch (e) {
+                console.log("Store Image Failed: " + e)
+            }
+        },
+        startUpdateProfile () {
+            this.overlay = true
+            if (this.imgFile != null) {
+                if (this.imgURL != null && this.imgURL != undefined && this.imgURL != "null") {
+                    this.S3Remove()
+                }
+                this.S3Upload()
+            } else {
+                this.updateProfile()
+            }
+        },
+        S3Remove () {
+            try{
+                Storage.remove(this.imgURL, { level: 'protected' })
+                .then(result => {
+                    this.imgURL = null
+                })
+                .catch(e => {
+                    this.failed(e, "アイコンの削除に失敗しました")
+                })
+            } catch (e) {
+                this.failed(e, "アイコンの削除に失敗しました")
+            }
+        },
+        S3Upload () {
+            const imgExtension = this.imgType.replace('image/', '')
+            const key = 'image-icon/' + this.currentUserInfo.attributes.sub + '.' + imgExtension
+            try {
+                Storage.put(key, this.imgFile, {
+                    level: 'protected',
+                    contentType: this.imgType
+                })
+                .then (result => {
+                    this.imgURL = result.key
+                    this.updateProfile()
+                })
+                .catch(e => {
+                    this.failed(e, "アイコンのアップロードに失敗しました")
+                })
+            } catch (e) {
+                this.failed(e, "アイコンのアップロードに失敗しました")
+            }
         },
         async updateProfile () {
             this.overlay = true
@@ -139,12 +252,14 @@ export default {
                     id: "${this.currentUserInfo.attributes.sub}",
                     name: "${this.currentUserInfo.username}",
                     email: "${this.currentUserInfo.attributes.email}",
-                    description: "${this.description}"
+                    description: "${this.description}",
+                    iconUrl: "${this.imgURL}"
                 }) {
                 id
                 name
                 email
                 description
+                iconUrl
                 }
             }
             `
