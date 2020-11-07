@@ -8,6 +8,8 @@ export type CreateProfileInput = {
   viewName?: string | null,
   email: string,
   iconUrl?: string | null,
+  div: number,
+  lastLogin: number,
   description?: string | null,
 };
 
@@ -16,6 +18,8 @@ export type ModelProfileConditionInput = {
   viewName?: ModelStringInput | null,
   email?: ModelStringInput | null,
   iconUrl?: ModelStringInput | null,
+  div?: ModelIntInput | null,
+  lastLogin?: ModelIntInput | null,
   description?: ModelStringInput | null,
   and?: Array< ModelProfileConditionInput | null > | null,
   or?: Array< ModelProfileConditionInput | null > | null,
@@ -62,12 +66,26 @@ export type ModelSizeInput = {
   between?: Array< number | null > | null,
 };
 
+export type ModelIntInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+};
+
 export type UpdateProfileInput = {
   id: string,
   name?: string | null,
   viewName?: string | null,
   email?: string | null,
   iconUrl?: string | null,
+  div?: number | null,
+  lastLogin?: number | null,
   description?: string | null,
 };
 
@@ -92,18 +110,6 @@ export type ModelMessageConditionInput = {
   and?: Array< ModelMessageConditionInput | null > | null,
   or?: Array< ModelMessageConditionInput | null > | null,
   not?: ModelMessageConditionInput | null,
-};
-
-export type ModelIntInput = {
-  ne?: number | null,
-  eq?: number | null,
-  le?: number | null,
-  lt?: number | null,
-  ge?: number | null,
-  gt?: number | null,
-  between?: Array< number | null > | null,
-  attributeExists?: boolean | null,
-  attributeType?: ModelAttributeTypes | null,
 };
 
 export type UpdateMessageInput = {
@@ -150,6 +156,8 @@ export type ModelProfileFilterInput = {
   viewName?: ModelStringInput | null,
   email?: ModelStringInput | null,
   iconUrl?: ModelStringInput | null,
+  div?: ModelIntInput | null,
+  lastLogin?: ModelIntInput | null,
   description?: ModelStringInput | null,
   and?: Array< ModelProfileFilterInput | null > | null,
   or?: Array< ModelProfileFilterInput | null > | null,
@@ -193,6 +201,15 @@ export type ModelFriendFilterInput = {
   not?: ModelFriendFilterInput | null,
 };
 
+export type ModelIntKeyConditionInput = {
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+};
+
 export type CreateProfileMutationVariables = {
   input: CreateProfileInput,
   condition?: ModelProfileConditionInput | null,
@@ -206,6 +223,8 @@ export type CreateProfileMutation = {
     viewName: string | null,
     email: string,
     iconUrl: string | null,
+    div: number,
+    lastLogin: number,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -225,6 +244,8 @@ export type UpdateProfileMutation = {
     viewName: string | null,
     email: string,
     iconUrl: string | null,
+    div: number,
+    lastLogin: number,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -244,6 +265,8 @@ export type DeleteProfileMutation = {
     viewName: string | null,
     email: string,
     iconUrl: string | null,
+    div: number,
+    lastLogin: number,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -361,6 +384,8 @@ export type GetProfileQuery = {
     viewName: string | null,
     email: string,
     iconUrl: string | null,
+    div: number,
+    lastLogin: number,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -383,6 +408,8 @@ export type ListProfilesQuery = {
       viewName: string | null,
       email: string,
       iconUrl: string | null,
+      div: number,
+      lastLogin: number,
       description: string | null,
       createdAt: string,
       updatedAt: string,
@@ -473,16 +500,17 @@ export type ListFriendsQuery = {
   } | null,
 };
 
-export type ProfileByNameQueryVariables = {
-  name?: string | null,
+export type ProfileSortedByLastTimeQueryVariables = {
+  div?: number | null,
+  lastLogin?: ModelIntKeyConditionInput | null,
   sortDirection?: ModelSortDirection | null,
   filter?: ModelProfileFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
 };
 
-export type ProfileByNameQuery = {
-  profileByName:  {
+export type ProfileSortedByLastTimeQuery = {
+  profileSortedByLastTime:  {
     __typename: "ModelProfileConnection",
     items:  Array< {
       __typename: "Profile",
@@ -491,6 +519,8 @@ export type ProfileByNameQuery = {
       viewName: string | null,
       email: string,
       iconUrl: string | null,
+      div: number,
+      lastLogin: number,
       description: string | null,
       createdAt: string,
       updatedAt: string,
@@ -507,6 +537,8 @@ export type OnCreateProfileSubscription = {
     viewName: string | null,
     email: string,
     iconUrl: string | null,
+    div: number,
+    lastLogin: number,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -521,6 +553,8 @@ export type OnUpdateProfileSubscription = {
     viewName: string | null,
     email: string,
     iconUrl: string | null,
+    div: number,
+    lastLogin: number,
     description: string | null,
     createdAt: string,
     updatedAt: string,
@@ -535,6 +569,8 @@ export type OnDeleteProfileSubscription = {
     viewName: string | null,
     email: string,
     iconUrl: string | null,
+    div: number,
+    lastLogin: number,
     description: string | null,
     createdAt: string,
     updatedAt: string,

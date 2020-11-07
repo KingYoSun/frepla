@@ -1,5 +1,7 @@
 export const state = () => {
     currentUserInfo: null
+    imgPreview: null
+    showPreviewImg: false
 }
 
 export const mutations = {
@@ -8,5 +10,13 @@ export const mutations = {
     },
     logout(state) {
         state.currentUserInfo = null
+    },
+    setImg(state, img) {
+        state.imgPreview = img
+        state.showPreviewImg = true
+    },
+    removeImg(state) {
+        state.showPreviewImg = false
+        state.imgPreview = null
     }
 }

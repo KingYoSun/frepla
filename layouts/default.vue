@@ -12,12 +12,12 @@
             color="indigo"
             size="40"
           >
-            <v-icon dark v-if="!showPreviewImg">mdi-account-circle</v-icon>
+            <v-icon dark v-if="!$store.state.showPreviewImg">mdi-account-circle</v-icon>
             <v-img
-            :src="imgPreview"
-            v-if="showPreviewImg"
+            :src="$store.state.imgPreview"
+            v-if="$store.state.showPreviewImg"
             alt="商品画像のプレビュー"
-            @error="showPreviewImg = false"
+            @error="removeImg"
             class="profileIcon"
             :max-width="50"
             />
@@ -97,8 +97,6 @@ export default {
       fixed: false,
       clipped: false,
       imgURL: null,
-      imgPreview: null,
-      showPreviewImg: false,
       items: [
         {
           icon: 'mdi-home',
@@ -178,10 +176,12 @@ export default {
       this.isLoggedIn = Boolean(this.currentUserInfo)
       if (this.isLoggedIn) {
         this.getProfile()
+        this.updateLastLogin(this.currentUserInfo)
       }
     },
     logout () {
       this.$store.commit('logout')
+      this.$store.commit('removeImg')
       this.isLoggedIn = false
     },
     async getProfile () {
@@ -210,13 +210,16 @@ export default {
             this.createProfile(currentUserInfo)
         }
     },
+    removeImg () {
+      this.$store.commit("removeImg")
+      this.imgURL = null
+    },
     setImgFile () {
         if (this.imgURL !== null && this.imgURL !== 'null') {
             try {
                 Storage.get(this.imgURL, {level: 'protected'})
                     .then((res) => {
-                        this.imgPreview = res
-                        this.showPreviewImg = true
+                        this.$store.commit("setImg", res)
                     })
                     .catch((e) => {
                         console.log("Getting Image Failed: " + e)
@@ -226,31 +229,60 @@ export default {
             }
         }
     },
-    async createProfile (currentUserInfo) {
-            const createProfile = `
-            mutation CreateProfile {
-                createProfile(input: {
-                    id: "${currentUserInfo.attributes.sub}",
-                    name: "${currentUserInfo.username}",
-                    email: "${currentUserInfo.attributes.email}",
-                    description: ""
-                }) {
-                id
-                name
-                email
-                description
-                }
-            }
-            `
-            try {
-                API.graphql(graphqlOperation(createProfile))
-                    .then((res)=> {
-                        console.log("プロフィールを作成しました")
-                    })
-            } catch (e) {
-                console.log("プロフィールの作成に失敗しました: " + e)
-            }
-        },
+    updateLastLogin (currentUserInfo) {
+      const date = new Date()
+      const nowUnix = Math.floor(date.getTime() / 1000)
+      const updateProfile = `
+      mutation UpdateProfile {
+          updateProfile(input: {
+              id: "${currentUserInfo.attributes.sub}",
+              lastLogin: ${nowUnix},
+          }) {
+          id
+          lastLogin
+          }
+      }
+      `
+      try {
+          API.graphql(graphqlOperation(updateProfile))
+              .then((res)=> {
+                  console.log("Updated LastLogin")
+              })
+      } catch (e) {
+          console.log("Updating LasLogin Failed: " + e)
+      }
+    },
+    createProfile (currentUserInfo) {
+      const date = new Date()
+      const nowUnix = Math.floor(date.getTime() / 1000)
+      const createProfile = `
+      mutation CreateProfile {
+          createProfile(input: {
+              id: "${currentUserInfo.attributes.sub}",
+              name: "${currentUserInfo.username}",
+              email: "${currentUserInfo.attributes.email}",
+              div: 1,
+              lastLogin: ${nowUnix},
+              description: ""
+          }) {
+          id
+          name
+          email
+          div
+          lastLogin
+          description
+          }
+      }
+      `
+      try {
+          API.graphql(graphqlOperation(createProfile))
+              .then((res)=> {
+                  console.log("プロフィールを作成しました")
+              })
+      } catch (e) {
+          console.log("プロフィールの作成に失敗しました: " + e)
+      }
+    },
   },
   computed: {
     filteredItems () {

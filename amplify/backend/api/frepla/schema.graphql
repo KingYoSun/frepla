@@ -1,9 +1,11 @@
-type Profile @model @key(name: "byName", fields: ["name"], queryField: "profileByName"){
+type Profile @model @key(name: "sortByLastLogin", fields: ["div", "lastLogin"], queryField: "profileSortedByLastTime"){
   id: String!
   name: String!
   viewName: String
   email: AWSEmail!
   iconUrl: String
+  div: Int!
+  lastLogin: AWSTimestamp!
   description: String
 }
 

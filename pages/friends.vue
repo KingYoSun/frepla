@@ -32,6 +32,7 @@
                 </v-btn>
             </v-row>
         </v-form>
+        <infinite-loading ref="infiniteLodaing" :identifier="infiniteId" @infinite="infiniteHandler" />
         <v-row justify="start" class="mt-6">
             <v-btn
                 color="teal"
@@ -47,26 +48,42 @@
 
 <script>
 import API, { graphqlOperation } from '@aws-amplify/api'
+import InfiniteLoading from 'vue-infinite-loading'
 import CustomOverlay from '~/components/overlay.vue'
 import CustomDialog from '~/components/dialog.vue'
 
 export default {
     components: {
         CustomOverlay,
-        CustomDialog
+        CustomDialog,
+        InfiniteLoading
     },
     data () {
         return {
+            page: 1,
             overlay: false,
             showDialog: false,
             dialogMessage: "",
             queryName: "",
+            nextToken: null,
+            infiniteId: 0,
+            users: null,
+            showUsers: false,
             required: value => !!value || "必須事項です",
         }
     },
+    mounted () {
+        this.infiniteId += 1
+    },
     methods: {
-        searchUsers () {
-            console.log(this.queryName)
+        infiniteHandler ($state) {
+            if (this.nextToken) {
+                this.nextToken = `"${this.nextToken}"`
+            } else if (this.page > 1) {
+                $state.complete()
+            }
+            const searchUsers = `
+            `
         }
     }
 }

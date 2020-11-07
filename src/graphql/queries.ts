@@ -10,6 +10,8 @@ export const getProfile = /* GraphQL */ `
       viewName
       email
       iconUrl
+      div
+      lastLogin
       description
       createdAt
       updatedAt
@@ -29,6 +31,8 @@ export const listProfiles = /* GraphQL */ `
         viewName
         email
         iconUrl
+        div
+        lastLogin
         description
         createdAt
         updatedAt
@@ -117,16 +121,18 @@ export const listFriends = /* GraphQL */ `
     }
   }
 `;
-export const profileByName = /* GraphQL */ `
-  query ProfileByName(
-    $name: String
+export const profileSortedByLastTime = /* GraphQL */ `
+  query ProfileSortedByLastTime(
+    $div: Int
+    $lastLogin: ModelIntKeyConditionInput
     $sortDirection: ModelSortDirection
     $filter: ModelProfileFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    profileByName(
-      name: $name
+    profileSortedByLastTime(
+      div: $div
+      lastLogin: $lastLogin
       sortDirection: $sortDirection
       filter: $filter
       limit: $limit
@@ -138,6 +144,8 @@ export const profileByName = /* GraphQL */ `
         viewName
         email
         iconUrl
+        div
+        lastLogin
         description
         createdAt
         updatedAt

@@ -256,6 +256,8 @@ export default {
         },
         async updateProfile () {
             this.overlay = true
+            const date = new Date()
+            const nowUnix = Math.floor(date.getTime() / 1000)
             const updateProfile = `
             mutation UpdateProfile {
                 updateProfile(input: {
@@ -263,6 +265,8 @@ export default {
                     name: "${this.currentUserInfo.username}",
                     viewName: "${this.viewName}",
                     email: "${this.currentUserInfo.attributes.email}",
+                    div: 1,
+                    lastLogin: ${nowUnix},
                     description: "${this.description}",
                     iconUrl: "${this.imgURL}"
                 }) {
@@ -270,6 +274,8 @@ export default {
                 name
                 viewName
                 email
+                div
+                lastLogin
                 description
                 iconUrl
                 }
@@ -280,6 +286,7 @@ export default {
                     .then((res)=> {
                         console.log("succeded")
                         this.showDialog = true
+                        this.$store.commit("setImg", this.imgPreview)
                     })
             } catch (e) {
                 this.failed(e + "プロフィールの更新に失敗しました")
