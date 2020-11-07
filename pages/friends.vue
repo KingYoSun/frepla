@@ -13,10 +13,10 @@
             </v-row>
             <v-row justify="center">
                 <v-text-field
-                v-model="queryName"
+                v-model="queryKey"
                 label="ユーザー名"
                 :rules="[required]"
-                @keyup.enter="searchUsers"
+                @keyup.enter="startSearchUsers"
                 />
                 <v-btn
                 dark
@@ -24,7 +24,7 @@
                 small
                 class="mx-2"
                 color="indigo"
-                @click="searchUsers"
+                @click="startSearchUsers"
                 >
                 <v-icon dark>
                     mdi-account-search
@@ -32,7 +32,7 @@
                 </v-btn>
             </v-row>
         </v-form>
-        <infinite-loading ref="infiniteLodaing" :identifier="infiniteId" @infinite="infiniteHandler" />
+        <infinite-loading ref="infiniteLoading" :identifier="infiniteId" @infinite="infiniteHandler" />
         <v-row justify="start" class="mt-6">
             <v-btn
                 color="teal"
@@ -64,26 +64,81 @@ export default {
             overlay: false,
             showDialog: false,
             dialogMessage: "",
-            queryName: "",
+            queryKey: "",
             nextToken: null,
             infiniteId: 0,
-            users: null,
+            users: [],
             showUsers: false,
             required: value => !!value || "必須事項です",
         }
     },
-    mounted () {
-        this.infiniteId += 1
-    },
     methods: {
+        failed (e, message) {
+            console.log(e)
+            alert(message)
+            this.overlay = false
+        },
+        startSearchUsers () {
+            this.users = []
+            this.nextToken = null
+            this.page = 0
+            this.$refs.infiniteLoading.stateChanger.reset()
+            this.infiniteId += 1
+        },
         infiniteHandler ($state) {
+            let nextToken = null
             if (this.nextToken) {
-                this.nextToken = `"${this.nextToken}"`
+                nextToken = `"${this.nextToken}"`
             } else if (this.page > 1) {
                 $state.complete()
             }
             const searchUsers = `
+                query ProfileSortedByLastTime {
+                    profileSortedByLastTime(
+                    div: 1
+                    sortDirection: DESC
+                    filter: { 
+                        or: [
+                            {name: {contains: "${this.queryKey}"}},
+                            {viewName: {contains: "${this.queryKey}"}},
+                            {description: {contains: "${this.queryKey}"}}
+                        ]
+                    }
+                    limit: 20
+                    nextToken: ${nextToken}
+                    ) {
+                    items {
+                        id
+                        name
+                        viewName
+                        email
+                        iconUrl
+                        div
+                        lastLogin
+                        description
+                        createdAt
+                        updatedAt
+                    }
+                    nextToken
+                    }
+                }
             `
+            try {
+                API.graphql(graphqlOperation(searchUsers))
+                    .then((res) => {
+                        this.page += 1
+                        const items = res.data.profileSortedByLastTime.items
+                        for (const item of items) {
+                            if (this.users.find(elem => elem.id === item.id) === undefined) {
+                                this.users.push(item)
+                            }
+                        }
+                        this.nextToken = res.data.profileSortedByLastTime.nextToken
+                        $state.loaded()
+                    })
+            } catch (e) {
+                $state.complete()
+            }
         }
     }
 }

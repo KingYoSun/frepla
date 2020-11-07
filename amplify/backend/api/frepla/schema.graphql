@@ -4,6 +4,8 @@ type Profile @model @key(name: "sortByLastLogin", fields: ["div", "lastLogin"], 
   viewName: String
   email: AWSEmail!
   iconUrl: String
+  banner: String
+  url: String
   div: Int!
   lastLogin: AWSTimestamp!
   description: String

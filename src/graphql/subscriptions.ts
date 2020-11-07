@@ -10,6 +10,8 @@ export const onCreateProfile = /* GraphQL */ `
       viewName
       email
       iconUrl
+      banner
+      url
       div
       lastLogin
       description
@@ -26,6 +28,8 @@ export const onUpdateProfile = /* GraphQL */ `
       viewName
       email
       iconUrl
+      banner
+      url
       div
       lastLogin
       description
@@ -42,6 +46,8 @@ export const onDeleteProfile = /* GraphQL */ `
       viewName
       email
       iconUrl
+      banner
+      url
       div
       lastLogin
       description

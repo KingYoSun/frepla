@@ -10,6 +10,8 @@ export const getProfile = /* GraphQL */ `
       viewName
       email
       iconUrl
+      banner
+      url
       div
       lastLogin
       description
@@ -31,6 +33,8 @@ export const listProfiles = /* GraphQL */ `
         viewName
         email
         iconUrl
+        banner
+        url
         div
         lastLogin
         description
@@ -144,6 +148,8 @@ export const profileSortedByLastTime = /* GraphQL */ `
         viewName
         email
         iconUrl
+        banner
+        url
         div
         lastLogin
         description
