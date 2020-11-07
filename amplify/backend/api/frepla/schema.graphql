@@ -1,14 +1,15 @@
 type Profile @model @key(name: "byName", fields: ["name"], queryField: "profileByName"){
   id: String!
   name: String!
+  viewName: String
   email: AWSEmail!
   iconUrl: String
   description: String
 }
 
-type Message @model @key(fields: ["fromUserId", "toUserId"]) {
-  fromUserId: String!
+type Message @model @key(fields: ["toUserId", "fromUserId"]) {
   toUserId: String!
+  fromUserId: String!
   message: String!
   ttl: AWSTimestamp! @ttl
   createdAt: AWSDateTime

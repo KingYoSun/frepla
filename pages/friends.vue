@@ -8,6 +8,9 @@
         @agree="showDialog = !showDialog"
         />
         <v-form ref="search" @submit.prevent>
+            <v-row justify="start" class="my-2">
+                <h2>ユーザー検索</h2>
+            </v-row>
             <v-row justify="center">
                 <v-text-field
                 v-model="queryName"

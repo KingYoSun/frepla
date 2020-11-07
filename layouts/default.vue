@@ -113,7 +113,7 @@ export default {
           status: ['loggedIn']
         },
         {
-          icon: 'mdi-account-multiple-plus',
+          icon: 'mdi-account-multiple',
           title: 'フレンド',
           to: '/friends',
           status: ['loggedIn']

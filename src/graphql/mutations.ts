@@ -10,6 +10,7 @@ export const createProfile = /* GraphQL */ `
     createProfile(input: $input, condition: $condition) {
       id
       name
+      viewName
       email
       iconUrl
       description
@@ -26,6 +27,7 @@ export const updateProfile = /* GraphQL */ `
     updateProfile(input: $input, condition: $condition) {
       id
       name
+      viewName
       email
       iconUrl
       description
@@ -42,6 +44,7 @@ export const deleteProfile = /* GraphQL */ `
     deleteProfile(input: $input, condition: $condition) {
       id
       name
+      viewName
       email
       iconUrl
       description
@@ -56,8 +59,8 @@ export const createMessage = /* GraphQL */ `
     $condition: ModelMessageConditionInput
   ) {
     createMessage(input: $input, condition: $condition) {
-      fromUserId
       toUserId
+      fromUserId
       message
       ttl
       createdAt
@@ -71,8 +74,8 @@ export const updateMessage = /* GraphQL */ `
     $condition: ModelMessageConditionInput
   ) {
     updateMessage(input: $input, condition: $condition) {
-      fromUserId
       toUserId
+      fromUserId
       message
       ttl
       createdAt
@@ -86,8 +89,8 @@ export const deleteMessage = /* GraphQL */ `
     $condition: ModelMessageConditionInput
   ) {
     deleteMessage(input: $input, condition: $condition) {
-      fromUserId
       toUserId
+      fromUserId
       message
       ttl
       createdAt

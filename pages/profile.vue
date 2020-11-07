@@ -29,9 +29,16 @@
             <v-row justify="center">
                 <v-text-field
                 v-model="username"
-                label="ユーザー名"
+                label="ユーザーID"
                 :rules="[required]"
                 disabled
+                />
+            </v-row>
+            <v-row justify="center">
+                <v-text-field
+                v-model="viewName"
+                label="ユーザー名"
+                :rules="[required]"
                 />
             </v-row>
             <v-row justify="center">
@@ -94,6 +101,7 @@ export default {
             dialogMessage: "プロフィールを更新しました",
             currentUserInfo: null,
             username: "",
+            viewName: "",
             email: "",
             description: "",
             imgURL: null,
@@ -137,6 +145,7 @@ export default {
                     getProfile(id: "${this.currentUserInfo.attributes.sub}") {
                         id
                         name
+                        viewName
                         email
                         description
                         iconUrl
@@ -149,6 +158,7 @@ export default {
                 await API.graphql(graphqlOperation(getProfile))
                     .then((res) => {
                         const items = res.data.getProfile
+                        this.viewName = ("viewName" in items) ? items.viewName : ""
                         this.description = ("description" in items) ? items.description : ""
                         this.imgURL = ("iconUrl" in items) ? items.iconUrl : null
                         this.setImgFile()
@@ -251,12 +261,14 @@ export default {
                 updateProfile(input: {
                     id: "${this.currentUserInfo.attributes.sub}",
                     name: "${this.currentUserInfo.username}",
+                    viewName: "${this.viewName}",
                     email: "${this.currentUserInfo.attributes.email}",
                     description: "${this.description}",
                     iconUrl: "${this.imgURL}"
                 }) {
                 id
                 name
+                viewName
                 email
                 description
                 iconUrl

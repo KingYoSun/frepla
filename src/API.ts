@@ -5,6 +5,7 @@
 export type CreateProfileInput = {
   id: string,
   name: string,
+  viewName?: string | null,
   email: string,
   iconUrl?: string | null,
   description?: string | null,
@@ -12,6 +13,7 @@ export type CreateProfileInput = {
 
 export type ModelProfileConditionInput = {
   name?: ModelStringInput | null,
+  viewName?: ModelStringInput | null,
   email?: ModelStringInput | null,
   iconUrl?: ModelStringInput | null,
   description?: ModelStringInput | null,
@@ -63,6 +65,7 @@ export type ModelSizeInput = {
 export type UpdateProfileInput = {
   id: string,
   name?: string | null,
+  viewName?: string | null,
   email?: string | null,
   iconUrl?: string | null,
   description?: string | null,
@@ -73,8 +76,8 @@ export type DeleteProfileInput = {
 };
 
 export type CreateMessageInput = {
-  fromUserId: string,
   toUserId: string,
+  fromUserId: string,
   message: string,
   ttl: number,
   createdAt?: string | null,
@@ -104,8 +107,8 @@ export type ModelIntInput = {
 };
 
 export type UpdateMessageInput = {
-  fromUserId: string,
   toUserId: string,
+  fromUserId: string,
   message?: string | null,
   ttl?: number | null,
   createdAt?: string | null,
@@ -113,8 +116,8 @@ export type UpdateMessageInput = {
 };
 
 export type DeleteMessageInput = {
-  fromUserId: string,
   toUserId: string,
+  fromUserId: string,
 };
 
 export type CreateFriendInput = {
@@ -144,6 +147,7 @@ export type DeleteFriendInput = {
 export type ModelProfileFilterInput = {
   id?: ModelStringInput | null,
   name?: ModelStringInput | null,
+  viewName?: ModelStringInput | null,
   email?: ModelStringInput | null,
   iconUrl?: ModelStringInput | null,
   description?: ModelStringInput | null,
@@ -163,8 +167,8 @@ export type ModelStringKeyConditionInput = {
 };
 
 export type ModelMessageFilterInput = {
-  fromUserId?: ModelStringInput | null,
   toUserId?: ModelStringInput | null,
+  fromUserId?: ModelStringInput | null,
   message?: ModelStringInput | null,
   ttl?: ModelIntInput | null,
   createdAt?: ModelStringInput | null,
@@ -199,6 +203,7 @@ export type CreateProfileMutation = {
     __typename: "Profile",
     id: string,
     name: string,
+    viewName: string | null,
     email: string,
     iconUrl: string | null,
     description: string | null,
@@ -217,6 +222,7 @@ export type UpdateProfileMutation = {
     __typename: "Profile",
     id: string,
     name: string,
+    viewName: string | null,
     email: string,
     iconUrl: string | null,
     description: string | null,
@@ -235,6 +241,7 @@ export type DeleteProfileMutation = {
     __typename: "Profile",
     id: string,
     name: string,
+    viewName: string | null,
     email: string,
     iconUrl: string | null,
     description: string | null,
@@ -251,8 +258,8 @@ export type CreateMessageMutationVariables = {
 export type CreateMessageMutation = {
   createMessage:  {
     __typename: "Message",
-    fromUserId: string,
     toUserId: string,
+    fromUserId: string,
     message: string,
     ttl: number,
     createdAt: string | null,
@@ -268,8 +275,8 @@ export type UpdateMessageMutationVariables = {
 export type UpdateMessageMutation = {
   updateMessage:  {
     __typename: "Message",
-    fromUserId: string,
     toUserId: string,
+    fromUserId: string,
     message: string,
     ttl: number,
     createdAt: string | null,
@@ -285,8 +292,8 @@ export type DeleteMessageMutationVariables = {
 export type DeleteMessageMutation = {
   deleteMessage:  {
     __typename: "Message",
-    fromUserId: string,
     toUserId: string,
+    fromUserId: string,
     message: string,
     ttl: number,
     createdAt: string | null,
@@ -351,6 +358,7 @@ export type GetProfileQuery = {
     __typename: "Profile",
     id: string,
     name: string,
+    viewName: string | null,
     email: string,
     iconUrl: string | null,
     description: string | null,
@@ -372,6 +380,7 @@ export type ListProfilesQuery = {
       __typename: "Profile",
       id: string,
       name: string,
+      viewName: string | null,
       email: string,
       iconUrl: string | null,
       description: string | null,
@@ -383,15 +392,15 @@ export type ListProfilesQuery = {
 };
 
 export type GetMessageQueryVariables = {
-  fromUserId: string,
   toUserId: string,
+  fromUserId: string,
 };
 
 export type GetMessageQuery = {
   getMessage:  {
     __typename: "Message",
-    fromUserId: string,
     toUserId: string,
+    fromUserId: string,
     message: string,
     ttl: number,
     createdAt: string | null,
@@ -400,8 +409,8 @@ export type GetMessageQuery = {
 };
 
 export type ListMessagesQueryVariables = {
-  fromUserId?: string | null,
-  toUserId?: ModelStringKeyConditionInput | null,
+  toUserId?: string | null,
+  fromUserId?: ModelStringKeyConditionInput | null,
   filter?: ModelMessageFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
@@ -413,8 +422,8 @@ export type ListMessagesQuery = {
     __typename: "ModelMessageConnection",
     items:  Array< {
       __typename: "Message",
-      fromUserId: string,
       toUserId: string,
+      fromUserId: string,
       message: string,
       ttl: number,
       createdAt: string | null,
@@ -479,6 +488,7 @@ export type ProfileByNameQuery = {
       __typename: "Profile",
       id: string,
       name: string,
+      viewName: string | null,
       email: string,
       iconUrl: string | null,
       description: string | null,
@@ -494,6 +504,7 @@ export type OnCreateProfileSubscription = {
     __typename: "Profile",
     id: string,
     name: string,
+    viewName: string | null,
     email: string,
     iconUrl: string | null,
     description: string | null,
@@ -507,6 +518,7 @@ export type OnUpdateProfileSubscription = {
     __typename: "Profile",
     id: string,
     name: string,
+    viewName: string | null,
     email: string,
     iconUrl: string | null,
     description: string | null,
@@ -520,6 +532,7 @@ export type OnDeleteProfileSubscription = {
     __typename: "Profile",
     id: string,
     name: string,
+    viewName: string | null,
     email: string,
     iconUrl: string | null,
     description: string | null,
@@ -531,8 +544,8 @@ export type OnDeleteProfileSubscription = {
 export type OnCreateMessageSubscription = {
   onCreateMessage:  {
     __typename: "Message",
-    fromUserId: string,
     toUserId: string,
+    fromUserId: string,
     message: string,
     ttl: number,
     createdAt: string | null,
@@ -543,8 +556,8 @@ export type OnCreateMessageSubscription = {
 export type OnUpdateMessageSubscription = {
   onUpdateMessage:  {
     __typename: "Message",
-    fromUserId: string,
     toUserId: string,
+    fromUserId: string,
     message: string,
     ttl: number,
     createdAt: string | null,
@@ -555,8 +568,8 @@ export type OnUpdateMessageSubscription = {
 export type OnDeleteMessageSubscription = {
   onDeleteMessage:  {
     __typename: "Message",
-    fromUserId: string,
     toUserId: string,
+    fromUserId: string,
     message: string,
     ttl: number,
     createdAt: string | null,

@@ -7,6 +7,7 @@ export const onCreateProfile = /* GraphQL */ `
     onCreateProfile {
       id
       name
+      viewName
       email
       iconUrl
       description
@@ -20,6 +21,7 @@ export const onUpdateProfile = /* GraphQL */ `
     onUpdateProfile {
       id
       name
+      viewName
       email
       iconUrl
       description
@@ -33,6 +35,7 @@ export const onDeleteProfile = /* GraphQL */ `
     onDeleteProfile {
       id
       name
+      viewName
       email
       iconUrl
       description
@@ -44,8 +47,8 @@ export const onDeleteProfile = /* GraphQL */ `
 export const onCreateMessage = /* GraphQL */ `
   subscription OnCreateMessage {
     onCreateMessage {
-      fromUserId
       toUserId
+      fromUserId
       message
       ttl
       createdAt
@@ -56,8 +59,8 @@ export const onCreateMessage = /* GraphQL */ `
 export const onUpdateMessage = /* GraphQL */ `
   subscription OnUpdateMessage {
     onUpdateMessage {
-      fromUserId
       toUserId
+      fromUserId
       message
       ttl
       createdAt
@@ -68,8 +71,8 @@ export const onUpdateMessage = /* GraphQL */ `
 export const onDeleteMessage = /* GraphQL */ `
   subscription OnDeleteMessage {
     onDeleteMessage {
-      fromUserId
       toUserId
+      fromUserId
       message
       ttl
       createdAt

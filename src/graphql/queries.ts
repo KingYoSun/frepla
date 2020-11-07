@@ -7,6 +7,7 @@ export const getProfile = /* GraphQL */ `
     getProfile(id: $id) {
       id
       name
+      viewName
       email
       iconUrl
       description
@@ -25,6 +26,7 @@ export const listProfiles = /* GraphQL */ `
       items {
         id
         name
+        viewName
         email
         iconUrl
         description
@@ -36,10 +38,10 @@ export const listProfiles = /* GraphQL */ `
   }
 `;
 export const getMessage = /* GraphQL */ `
-  query GetMessage($fromUserId: String!, $toUserId: String!) {
-    getMessage(fromUserId: $fromUserId, toUserId: $toUserId) {
-      fromUserId
+  query GetMessage($toUserId: String!, $fromUserId: String!) {
+    getMessage(toUserId: $toUserId, fromUserId: $fromUserId) {
       toUserId
+      fromUserId
       message
       ttl
       createdAt
@@ -49,24 +51,24 @@ export const getMessage = /* GraphQL */ `
 `;
 export const listMessages = /* GraphQL */ `
   query ListMessages(
-    $fromUserId: String
-    $toUserId: ModelStringKeyConditionInput
+    $toUserId: String
+    $fromUserId: ModelStringKeyConditionInput
     $filter: ModelMessageFilterInput
     $limit: Int
     $nextToken: String
     $sortDirection: ModelSortDirection
   ) {
     listMessages(
-      fromUserId: $fromUserId
       toUserId: $toUserId
+      fromUserId: $fromUserId
       filter: $filter
       limit: $limit
       nextToken: $nextToken
       sortDirection: $sortDirection
     ) {
       items {
-        fromUserId
         toUserId
+        fromUserId
         message
         ttl
         createdAt
@@ -133,6 +135,7 @@ export const profileByName = /* GraphQL */ `
       items {
         id
         name
+        viewName
         email
         iconUrl
         description
