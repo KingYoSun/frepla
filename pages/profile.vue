@@ -115,6 +115,7 @@ export default {
             showDialog: false,
             dialogMessage: "プロフィールを更新しました",
             currentUserInfo: null,
+            currentCredentials: null,
             username: "",
             viewName: "",
             email: "",
@@ -145,6 +146,7 @@ export default {
         if (!this.currentUserInfo) {
             this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
         }
+        this.currentCredentials = await this.$Amplify.Auth.currentCredentials()
         this.username = this.currentUserInfo.username
         this.email = this.currentUserInfo.attributes.email
         this.getProfile()
@@ -327,7 +329,8 @@ export default {
                     description: "${this.description}",
                     iconUrl: "${this.icon.imgURL}",
                     banner: "${this.banner.imgURL}",
-                    url: "${this.url}"
+                    url: "${this.url}",
+                    identityId: "${this.currentCredentials.identityId}"
                 }) {
                 id
                 name
@@ -339,6 +342,7 @@ export default {
                 iconUrl
                 banner
                 url
+                identityId
                 }
             }
             `

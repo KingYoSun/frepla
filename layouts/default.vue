@@ -89,7 +89,6 @@ import { AmplifyEventBus } from 'aws-amplify-vue'
 export default {
   data () {
     return {
-      currentUserInfo: null,
       exitProfile: false,
       backgroundColor: "gray darken-4",
       drawer: false,
@@ -171,12 +170,12 @@ export default {
       }
     },
     async getUserInfo () {
-      this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
-      this.$store.commit('login', this.currentUserInfo)
-      this.isLoggedIn = Boolean(this.currentUserInfo)
+      const currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+      this.$store.commit('login', currentUserInfo)
+      this.isLoggedIn = Boolean(currentUserInfo)
       if (this.isLoggedIn) {
         this.getProfile()
-        this.updateLastLogin(this.currentUserInfo)
+        this.updateLastLogin(currentUserInfo)
       }
     },
     logout () {

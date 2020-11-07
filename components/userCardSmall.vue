@@ -1,27 +1,33 @@
 <template>
-  <div class="user-banner-wrapper-small" :style="{ backgroundImage: 'url(' + user.banner + ')' }">
+  <div v-if="banner && icon" class="user-banner-wrapper-small" :style="{ backgroundImage: 'url(' + banner.imgPreview + ')' }">
     <div class="user-banner-container-small">
       <div class="user-info-first-small">
-        <n-link :to="{ name: 'user-userScreenName', params: { userScreenName: user.viewName} }" class="user-link-image-small">
-          <img :src="user.iconUrl" class="user-image-small">
-        </n-link>
-        <n-link :to="{ name: 'user-userScreenName', params: { userScreenName: user.viewName} }" class="user-link-small">
+        <div class="user-link-image-small">
+          <v-img
+          :src="icon.imgPreview"
+          alt="アイコンのプレビュー"
+          @error="resetImgURL(icon)"
+          class="user-image-small"
+          :max-width="100"
+          />
+        </div>
+        <div class="user-link-small">
           <div class="user-name-box-small">
-            <h1>{{ user.name }}</h1>
-            <h2>@{{ user.viewName }}</h2>
+            <h1>{{ user.viewName }}</h1>
+            <h2>@{{ user.name }}</h2>
           </div>
-        </n-link>
+        </div>
         <a class="user-follow-btn-small" :href="'https://twitter.com/intent/follow?screen_name=' + user.viewName" target="_blank">フォロー</a>
       </div>
       <div class="user-count-small">
         <div class="user-follow-count-small">
           <h3>
-            フォロー: {{ user.follow_count }}
+            フォロー: {{ follow_count }}
           </h3>
         </div>
         <div class="user-follower-count-small">
           <h3>
-            フォロワー: {{ user.follower_count }}
+            フォロワー: {{ follower_count }}
           </h3>
         </div>
       </div>
@@ -35,14 +41,33 @@
 
 <script>
 import TwitterText from 'twitter-text'
+import API, { graphqlOperation } from '@aws-amplify/api'
+import Storage from '@aws-amplify/storage'
 
 export default {
-  name: 'userCardSmall',
+  name: 'UserCardSmall',
   data () {
-      return {
-          follow_count: 0,
-          follower_count: 0
-      }
+    return {
+      follow_count: 0,
+      follower_count: 0,
+      styleGridSpan: '',
+      icon: {
+        name: "icon",
+        imgURL: null,
+        imgFile: null,
+        imgType: null,
+        imgPreview: null,
+        showPreviewImg: false,
+      },
+      banner: {
+        name: "banner",
+        imgURL: null,
+        imgFile: null,
+        imgType: null,
+        imgPreview: null,
+        showPreviewImg: false,
+      },
+    }
   },
   props: {
     user: {
@@ -54,14 +79,10 @@ export default {
           banner: '',
           description: '',
           iconUrl: '',
-          url: ''
+          url: '',
+          identityId: ""
         }
       }
-    }
-  },
-  data () {
-    return {
-      styleGridSpan: ''
     }
   },
   computed: {
@@ -70,6 +91,39 @@ export default {
         targetBlank: true
       })
     }
+  },
+  methods: {
+    resetImgURL (obj) {
+        obj.showPreviewImg = false
+        obj.imgURL = null
+        obj.imgFile = null
+    },
+    setImgUrlIcon () {
+      this.icon.imgURL = this.user.iconUrl
+      this.setImgFile(this.icon)
+    },
+    setImgUrlBanner () {
+      this.banner.imgURL = this.user.banner
+      this.setImgFile(this.banner)
+    },
+    async setImgFile (obj) {
+        if (obj.imgURL !== null && obj.imgURL !== 'null' && this.user.identityId !== null) {
+            try {
+                await Storage.get(obj.imgURL, {
+                  level: 'protected',
+                  identityId: this.user.identityId
+                }).then((res) => {
+                        obj.imgPreview = res
+                        obj.showPreviewImg = true
+                    })
+                    .catch((e) => {
+                        console.log("Getting Image Failed: " + e)
+                    })
+            } catch (e) {
+                console.log("Getting Image Failed: " + e)
+            }
+        }
+    },
   }
 }
 </script>
@@ -79,12 +133,13 @@ export default {
   background-size: cover;
   display: flex;
   align-items: center;
-  box-shadow: 3px 3px 10px var(--border-dark), -3px -3px 10px var(--border-dark);
+  border-radius: 10px;
+  box-shadow: 3px 3px 10px #000, -3px -3px 10px #000;
 }
 .user-banner-container-small {
   width: 100%;
   max-width: 900px;
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: rgba(0, 0, 0, 0.6);
 }
 .user-info-first-small {
   display: flex;
@@ -164,6 +219,6 @@ export default {
   color: var(--text-color-main-hover);
 }
 .user-description-small a:hover {
-  color: white;
+  color: gray;
 }
 </style>

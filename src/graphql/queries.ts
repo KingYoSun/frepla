@@ -14,6 +14,7 @@ export const getProfile = /* GraphQL */ `
       url
       div
       lastLogin
+      identityId
       description
       createdAt
       updatedAt
@@ -37,6 +38,7 @@ export const listProfiles = /* GraphQL */ `
         url
         div
         lastLogin
+        identityId
         description
         createdAt
         updatedAt
@@ -152,6 +154,7 @@ export const profileSortedByLastTime = /* GraphQL */ `
         url
         div
         lastLogin
+        identityId
         description
         createdAt
         updatedAt

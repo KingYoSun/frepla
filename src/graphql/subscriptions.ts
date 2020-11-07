@@ -14,6 +14,7 @@ export const onCreateProfile = /* GraphQL */ `
       url
       div
       lastLogin
+      identityId
       description
       createdAt
       updatedAt
@@ -32,6 +33,7 @@ export const onUpdateProfile = /* GraphQL */ `
       url
       div
       lastLogin
+      identityId
       description
       createdAt
       updatedAt
@@ -50,6 +52,7 @@ export const onDeleteProfile = /* GraphQL */ `
       url
       div
       lastLogin
+      identityId
       description
       createdAt
       updatedAt

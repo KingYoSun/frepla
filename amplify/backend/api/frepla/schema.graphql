@@ -8,6 +8,7 @@ type Profile @model @key(name: "sortByLastLogin", fields: ["div", "lastLogin"], 
   url: String
   div: Int!
   lastLogin: AWSTimestamp!
+  identityId: String!
   description: String
 }
 

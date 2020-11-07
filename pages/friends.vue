@@ -32,6 +32,11 @@
                 </v-btn>
             </v-row>
         </v-form>
+        <div class="user-list">
+            <div v-for="(user, $index) in users" :id="'userContainer-' + user.name" :key="$index" class="my-6">
+                <user-card-small :ref="'userCardSmall-' + user.id" :user="user" />
+            </div>
+        </div>
         <infinite-loading ref="infiniteLoading" :identifier="infiniteId" @infinite="infiniteHandler" />
         <v-row justify="start" class="mt-6">
             <v-btn
@@ -51,12 +56,14 @@ import API, { graphqlOperation } from '@aws-amplify/api'
 import InfiniteLoading from 'vue-infinite-loading'
 import CustomOverlay from '~/components/overlay.vue'
 import CustomDialog from '~/components/dialog.vue'
+import UserCardSmall from '~/components/userCardSmall.vue'
 
 export default {
     components: {
         CustomOverlay,
         CustomDialog,
-        InfiniteLoading
+        InfiniteLoading,
+        UserCardSmall
     },
     data () {
         return {
@@ -113,11 +120,12 @@ export default {
                         viewName
                         email
                         iconUrl
+                        banner
+                        url
                         div
                         lastLogin
                         description
-                        createdAt
-                        updatedAt
+                        identityId
                     }
                     nextToken
                     }
@@ -135,6 +143,10 @@ export default {
                         }
                         this.nextToken = res.data.profileSortedByLastTime.nextToken
                         $state.loaded()
+                        for (const item of items) {
+                            this.$refs['userCardSmall-' + item.id][0].setImgUrlIcon()
+                            this.$refs['userCardSmall-' + item.id][0].setImgUrlBanner()
+                        }
                     })
             } catch (e) {
                 $state.complete()
