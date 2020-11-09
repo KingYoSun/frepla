@@ -300,6 +300,7 @@ export default {
                                 this.user.followedMe = null
                             }
                         }
+                        this.$store.commit("setFriendList")
                         this.user.status = status
                         console.log("Updating Friend Relation Succeeded")
                     })
