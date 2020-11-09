@@ -43,7 +43,7 @@
                 color="teal"
                 dark
                 nuxt
-                to="/profile"
+                to="/"
                 >
                 戻る
             </v-btn>
@@ -147,9 +147,10 @@ export default {
             storeUsers = (this.category === 'friends') ? this.$store.state.friendList : storeUsers
             storeUsers = (this.category === 'follow') ? this.$store.state.followList : storeUsers
             storeUsers = (this.category === 'follower') ? this.$store.state.followerList : storeUsers
-            if (this.indexNum >= storeUsers.length || (this.page > 1 && this.users[-1].id === storeUsers[-1])) {
-                this.indexNum--
+            if (this.indexNum >= storeUsers.length || storeUsers.length == 0 || (this.page > 1 && this.users[-1].id === storeUsers[-1])) {
+                this.indexNum += (this.indexNum === 0) ? 0 : -1
                 $state.complete()
+                return false
             }
             let loadCount = 0
             let status = true

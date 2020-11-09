@@ -54,7 +54,7 @@ export const mutations = {
         state.followList.push(toUserId)
     },
     removeFollowList(state, toUserId) {
-        state.followList.filter(n => n !== toUserId)
+        state.followList = state.followList.filter(n => n !== toUserId)
     },
     setFollowerList(state, array) {
         state.followerList = array
@@ -63,7 +63,7 @@ export const mutations = {
         state.followerList.push(toUserId)
     },
     removeFollowerList(state, toUserId) {
-        state.followerList.filter(n => n !== toUserId)
+        state.followerList = state.followerList.filter(n => n !== toUserId)
     },
     setFriendList(state) {
         state.friendList = state.followList.filter(follow => {

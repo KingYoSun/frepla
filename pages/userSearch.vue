@@ -43,7 +43,7 @@
                 color="teal"
                 dark
                 nuxt
-                to="/profile"
+                to="/"
                 >
                 戻る
             </v-btn>

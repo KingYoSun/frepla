@@ -294,7 +294,7 @@ export default {
                             this.$store.commit("addFollowList", this.user.id)
                         }
                         if (status === 'block') {
-                            this.store.commit("removeFollowList", this.user.id)
+                            this.$store.commit("removeFollowList", this.user.id)
                             if (this.user.followedMe === 'follow'){
                                 await this.deleteFriend('follow', 'from')
                                 this.user.followedMe = null
@@ -337,14 +337,15 @@ export default {
                         if (status === "follow" && direction === "to") {
                             this.editFollowCount(-1, "me")
                             this.editFollowerCount(-1, "user")
-                            this.store.commit("removeFollowList", this.user.id)
+                            this.$store.commit("removeFollowList", this.user.id)
                         } else if (status === 'follow' && direction === "from") {
                             this.editFollowCount(-1, "user")
                             this.editFollowerCount(-1, "me")
-                            this.store.commit("removeFollowerList", this.user.id)
+                            this.$store.commit("removeFollowerList", this.user.id)
                         } else {
                             this.disableBtn = false
                         }
+                        this.$store.commit("setFriendList")
                         this.user.status = null
                     })
             } catch (e) {
