@@ -16,6 +16,8 @@ export const getProfile = /* GraphQL */ `
       lastLogin
       identityId
       description
+      followCount
+      followerCount
       createdAt
       updatedAt
     }
@@ -40,6 +42,8 @@ export const listProfiles = /* GraphQL */ `
         lastLogin
         identityId
         description
+        followCount
+        followerCount
         createdAt
         updatedAt
       }
@@ -156,6 +160,36 @@ export const profileSortedByLastTime = /* GraphQL */ `
         lastLogin
         identityId
         description
+        followCount
+        followerCount
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const friendByToUserId = /* GraphQL */ `
+  query FriendByToUserId(
+    $id: String
+    $toUserId: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelFriendFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    friendByToUserId(
+      id: $id
+      toUserId: $toUserId
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        status
+        toUserId
         createdAt
         updatedAt
       }

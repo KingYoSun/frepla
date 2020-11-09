@@ -349,7 +349,7 @@ export default {
             try {
                 await API.graphql(graphqlOperation(updateProfile))
                     .then((res)=> {
-                        console.log("succeded")
+                        console.log("succedeed")
                         this.showDialog = true
                         this.$store.commit("setImg", this.icon.imgPreview)
                     })

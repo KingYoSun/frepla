@@ -10,6 +10,8 @@ type Profile @model @key(name: "sortByLastLogin", fields: ["div", "lastLogin"], 
   lastLogin: AWSTimestamp!
   identityId: String!
   description: String
+  followCount: Int
+  followerCount: Int
 }
 
 type Message @model @key(fields: ["toUserId", "fromUserId"]) {
@@ -21,7 +23,9 @@ type Message @model @key(fields: ["toUserId", "fromUserId"]) {
   updatedAt: AWSDateTime
 }
 
-type Friend @model @key(fields: ["id", "status"]) {
+type Friend @model
+@key(fields: ["id", "status"])
+@key(name: "friendByToUserId", fields: ["id", "toUserId"], queryField: "friendByToUserId") {
   id: String!
   status: String!
   toUserId: String!

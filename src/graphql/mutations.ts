@@ -19,6 +19,8 @@ export const createProfile = /* GraphQL */ `
       lastLogin
       identityId
       description
+      followCount
+      followerCount
       createdAt
       updatedAt
     }
@@ -41,6 +43,8 @@ export const updateProfile = /* GraphQL */ `
       lastLogin
       identityId
       description
+      followCount
+      followerCount
       createdAt
       updatedAt
     }
@@ -63,6 +67,8 @@ export const deleteProfile = /* GraphQL */ `
       lastLogin
       identityId
       description
+      followCount
+      followerCount
       createdAt
       updatedAt
     }
