@@ -85,6 +85,7 @@
 import API, { graphqlOperation } from '@aws-amplify/api'
 import Storage from '@aws-amplify/storage'
 import { AmplifyEventBus } from 'aws-amplify-vue'
+import * as Common from '~/assets/js/common.js'
 
 export default {
     data () {
@@ -107,6 +108,12 @@ export default {
                     icon: 'mdi-account',
                     title: 'プロフィール',
                     to: '/profile',
+                    status: ['loggedIn']
+                },
+                {
+                    icon: 'mdi-account-multiple',
+                    title: 'フォロー/フォロワー一覧',
+                    to: '/friends',
                     status: ['loggedIn']
                 },
                 {
@@ -139,10 +146,15 @@ export default {
             }
         })
     },
-    created () {
+    async created () {
         this.containerStyle = JSON.parse(JSON.stringify(this.defaultContainerStyle))
         this.setListener()
-        this.getUserInfo()
+        await this.getUserInfo()
+        const followList = await Common.getFollowList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
+        this.$store.commit("setFollowList", followList)
+        const followerList = await Common.getFollowerList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
+        this.$store.commit("setFollowerList", followerList)
+        this.$store.commit("setFriendList")
     },
     methods: {
         setListener () {

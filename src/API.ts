@@ -603,6 +603,30 @@ export type FriendByToUserIdQuery = {
   } | null,
 };
 
+export type FriendsToFollowerQueryVariables = {
+  toUserId?: string | null,
+  status?: ModelStringKeyConditionInput | null,
+  sortDirection?: ModelSortDirection | null,
+  filter?: ModelFriendFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type FriendsToFollowerQuery = {
+  friendsToFollower:  {
+    __typename: "ModelFriendConnection",
+    items:  Array< {
+      __typename: "Friend",
+      id: string,
+      status: string,
+      toUserId: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken: string | null,
+  } | null,
+};
+
 export type OnCreateProfileSubscription = {
   onCreateProfile:  {
     __typename: "Profile",

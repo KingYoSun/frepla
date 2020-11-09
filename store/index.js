@@ -2,6 +2,9 @@ export const state = () => {
     currentUserInfo: null
     followCount: 0
     followerCount: 0
+    followList: []
+    followerList: []
+    friendList: []
     imgPreview: null
     showPreviewImg: false
 }
@@ -38,5 +41,28 @@ export const mutations = {
     },
     followerCountDecrement(state) {
         state.followerCount--
+    },
+    setFollowList(state, array) {
+        state.followList = array
+    },
+    addFollowList(state, toUserId) {
+        state.followList.push(toUserId)
+    },
+    removeFollowList(state, toUserId) {
+        state.followList.filter(n => n !== toUserId)
+    },
+    setFollowerList(state, array) {
+        state.followerList = array
+    },
+    addFollowerList(state, toUserId) {
+        state.followerList.push(toUserId)
+    },
+    removeFollowerList(state, toUserId) {
+        state.followerList.filter(n => n !== toUserId)
+    },
+    setFriendList(state) {
+        state.friendList = state.followList.filter(follow => {
+            return state.followerList.indexOf(follow) !== -1
+        })
     }
 }

@@ -9,27 +9,27 @@
         />
         <v-form ref="search" @submit.prevent>
             <v-row justify="start" class="my-2">
-                <h2>ユーザー検索</h2>
+                <h2>{{ categoryTxt }}</h2>
             </v-row>
-            <v-row justify="center">
-                <v-text-field
-                v-model="queryKey"
-                label="ユーザー名"
-                :rules="[required]"
-                @keyup.enter="validation"
-                />
-                <v-btn
-                dark
-                fab
-                small
-                class="mx-2"
-                color="indigo"
-                @click="validation"
+            <v-row justify="end">
+                <v-radio-group
+                v-model="category"
+                row
+                @change="changeCategory"
                 >
-                <v-icon dark>
-                    mdi-account-search
-                </v-icon>
-                </v-btn>
+                    <v-radio
+                    label="相互フォロー"
+                    value="friends"
+                    />
+                    <v-radio
+                    label="フォロー"
+                    value="follow"
+                    />
+                    <v-radio
+                    label="フォロワー"
+                    value="follower"
+                    />
+                </v-radio-group>
             </v-row>
         </v-form>
         <div class="user-list">
@@ -57,6 +57,7 @@ import InfiniteLoading from 'vue-infinite-loading'
 import CustomOverlay from '~/components/overlay.vue'
 import CustomDialog from '~/components/dialog.vue'
 import UserCardSmall from '~/components/userCardSmall.vue'
+import * as Common from '~/assets/js/common.js'
 
 export default {
     components: {
@@ -68,15 +69,17 @@ export default {
     data () {
         return {
             currentUserInfo: {},
+            category: "friends",
+            categoryTxt: "相互フォロー一覧",
             page: 1,
             overlay: false,
             showDialog: false,
             dialogMessage: "",
             queryKey: "",
-            nextToken: null,
             infiniteId: 0,
             users: [],
             showUsers: false,
+            indexNum: 0,
             firstLoadFlag: false,
             required: value => !!value || "必須事項です",
         }
@@ -88,22 +91,18 @@ export default {
             this.$store.commit('login', this.currentUserInfo)
         }
         await this.getFollowCount()
+        const followList = await Common.getFollowList(this.currentUserInfo.attributes.sub, 'follow')
+        this.$store.commit("setFollowList", followList)
+        const followerList = await Common.getFollowerList(this.currentUserInfo.attributes.sub, 'follow')
+        this.$store.commit("setFollowerList", followerList)
+        this.$store.commit("setFriendList")
+        this.changeCategory()
     },
     methods: {
         failed (e, message) {
             console.log(e)
             alert(message)
             this.overlay = false
-        },
-        validation () {
-            try {
-                if(!this.$refs.search.validate()) {
-                throw "ExceptionOccured"
-                }
-                 this.startSearchUsers()
-            } catch (e) {
-                console.log(e)
-            }
         },
         async getFollowCount () {
             const getProfile = `
@@ -128,79 +127,78 @@ export default {
                 console.log(e)
             }
         },
-        startSearchUsers () {
+        changeCategory () {
+            this.categoryTxt = (this.category === 'friends') ? "相互フォロー一覧" : this.categoryTxt
+            this.categoryTxt = (this.category === 'follow') ? "フォロー一覧" : this.categoryTxt
+            this.categoryTxt = (this.category === 'follower') ? "フォロワー一覧" : this.categoryTxt
             this.users = []
-            this.nextToken = null
+            this.indexNum = 0
             this.page = 0
-            this.$refs.infiniteLoading.stateChanger.reset()
             this.firstLoadFlag = true
+            this.$refs.infiniteLoading.stateChanger.reset()
             this.infiniteId += 1
         },
-        infiniteHandler ($state) {
+        async infiniteHandler ($state) {
             if (!this.firstLoadFlag) {
                 $state.complete()
                 return false
             }
-            let nextToken = null
-            if (this.nextToken) {
-                nextToken = `"${this.nextToken}"`
-            } else if (this.page > 1) {
+            let storeUsers = null
+            storeUsers = (this.category === 'friends') ? this.$store.state.friendList : storeUsers
+            storeUsers = (this.category === 'follow') ? this.$store.state.followList : storeUsers
+            storeUsers = (this.category === 'follower') ? this.$store.state.followerList : storeUsers
+            if (this.indexNum >= storeUsers.length || (this.page > 1 && this.users[-1].id === storeUsers[-1])) {
+                this.indexNum--
                 $state.complete()
             }
-            const searchUsers = `
-                query ProfileSortedByLastTime {
-                    profileSortedByLastTime(
-                    div: 1,
-                    sortDirection: DESC,
-                    filter: { 
-                        or: [
-                            {name: {contains: "${this.queryKey}"}},
-                            {viewName: {contains: "${this.queryKey}"}},
-                            {description: {contains: "${this.queryKey}"}}
-                        ]
-                    },
-                    limit: 20,
-                    nextToken: ${nextToken}
-                    ) {
-                    items {
-                        id
-                        name
-                        viewName
-                        iconUrl
-                        banner
-                        url
-                        description
-                        identityId
-                        followCount
-                        followerCount
-                    },
-                    nextToken
+            let loadCount = 0
+            let status = true
+            const ids = []
+            do {
+                const getProfile = `
+                    query GetProfile {
+                        getProfile(id: "${storeUsers[this.indexNum]}") {
+                            id
+                            name
+                            viewName
+                            iconUrl
+                            banner
+                            url
+                            identityId
+                            description
+                            followCount
+                            followerCount
+                            createdAt
+                            updatedAt
+                        }
                     }
-                }
-            `
-            try {
-                API.graphql(graphqlOperation(searchUsers))
-                    .then(async (res) => {
-                        this.page += 1
-                        const items = res.data.profileSortedByLastTime.items
-                        for (const item of items) {
+                `
+                try {
+                    await API.graphql(graphqlOperation(getProfile))
+                        .then(async (res) => {
+                            const item = res.data.getProfile
                             item.status = await this.getStatus("to", item)
                             item.followedMe = await this.getStatus("from", item)
                             if (this.users.find(elem => elem.id === item.id) === undefined && item.id !== this.currentUserInfo.attributes.sub && item.followedMe !== "block") {
                                 this.users.push(item)
+                                ids.push(item.id)
                             }
-                        }
-                        this.nextToken = res.data.profileSortedByLastTime.nextToken
-                        $state.loaded()
-                        for (const item of items) {
-                            if (item.id !== this.currentUserInfo.attributes.sub) {
-                                this.$refs['userCardSmall-' + item.id][0].setImgUrlIcon()
-                                this.$refs['userCardSmall-' + item.id][0].setImgUrlBanner()
-                            }
-                        }
-                    })
-            } catch (e) {
-                $state.complete()
+                            loadCount++
+                            this.indexNum++
+                        })
+                } catch (e) {
+                    this.failed(e, "リストの読み込みに失敗しました")
+                    status = false
+                    $state.complete()
+                }
+            } while(status && loadCount < 20 && this.indexNum < storeUsers.length)
+            $state.loaded()
+            this.page += 1
+            for (const id of ids) {
+                if (id !== this.currentUserInfo.attributes.sub) {
+                    this.$refs['userCardSmall-' + id][0].setImgUrlIcon()
+                    this.$refs['userCardSmall-' + id][0].setImgUrlBanner()
+                }
             }
         },
         async getStatus (direction, user) {

@@ -25,7 +25,8 @@ type Message @model @key(fields: ["toUserId", "fromUserId"]) {
 
 type Friend @model
 @key(fields: ["id", "status"])
-@key(name: "friendByToUserId", fields: ["id", "toUserId"], queryField: "friendByToUserId") {
+@key(name: "friendByToUserId", fields: ["id", "toUserId"], queryField: "friendByToUserId")
+@key(name: "friendsToFollower", fields: ["toUserId", "status"], queryField: "friendsToFollower") {
   id: String!
   status: String!
   toUserId: String!

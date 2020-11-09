@@ -197,3 +197,31 @@ export const friendByToUserId = /* GraphQL */ `
     }
   }
 `;
+export const friendsToFollower = /* GraphQL */ `
+  query FriendsToFollower(
+    $toUserId: String
+    $status: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelFriendFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    friendsToFollower(
+      toUserId: $toUserId
+      status: $status
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        status
+        toUserId
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
