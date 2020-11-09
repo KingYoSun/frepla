@@ -288,18 +288,20 @@ export default {
             try {
                 await API.graphql(graphqlOperation(createFriend))
                     .then(async (res) => {
-                        console.log("Updating Friend Relation Succeeded")
                         if (status === "follow") {
                             this.editFollowCount(1, "me")
                             this.editFollowerCount(1, "user")
+                            this.$store.commit("addFollowList", this.user.id)
                         }
                         if (status === 'block') {
+                            this.store.commit("removeFollowList", this.user.id)
                             if (this.user.followedMe === 'follow'){
                                 await this.deleteFriend('follow', 'from')
                                 this.user.followedMe = null
                             }
                         }
                         this.user.status = status
+                        console.log("Updating Friend Relation Succeeded")
                     })
             } catch (e) {
                 this.failed(e, "フレンド情報の更新に失敗しました")
@@ -334,9 +336,11 @@ export default {
                         if (status === "follow" && direction === "to") {
                             this.editFollowCount(-1, "me")
                             this.editFollowerCount(-1, "user")
+                            this.store.commit("removeFollowList", this.user.id)
                         } else if (status === 'follow' && direction === "from") {
                             this.editFollowCount(-1, "user")
                             this.editFollowerCount(-1, "me")
+                            this.store.commit("removeFollowerList", this.user.id)
                         } else {
                             this.disableBtn = false
                         }
