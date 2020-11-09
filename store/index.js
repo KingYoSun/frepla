@@ -15,6 +15,11 @@ export const mutations = {
     },
     logout(state) {
         state.currentUserInfo = null
+        state.followList = []
+        state.followCount = 0
+        state.followerCount = 0
+        state.followerList = []
+        state.friendList = []
     },
     setImg(state, img) {
         state.imgPreview = img
