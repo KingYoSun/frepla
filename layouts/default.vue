@@ -150,11 +150,6 @@ export default {
         this.containerStyle = JSON.parse(JSON.stringify(this.defaultContainerStyle))
         this.setListener()
         await this.getUserInfo()
-        const followList = await Common.getFollowList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
-        this.$store.commit("setFollowList", followList)
-        const followerList = await Common.getFollowerList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
-        this.$store.commit("setFollowerList", followerList)
-        this.$store.commit("setFriendList")
     },
     methods: {
         setListener () {
@@ -182,12 +177,20 @@ export default {
             }
         },
         async getUserInfo () {
-            const currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
-            this.$store.commit('login', currentUserInfo)
+            let currentUserInfo = this.$store.state.currentUserInfo
+            if (!currentUserInfo) {
+                currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+                this.$store.commit('login', currentUserInfo)
+            }
             this.isLoggedIn = Boolean(currentUserInfo)
             if (this.isLoggedIn) {
                 this.getProfile()
                 this.updateLastLogin(currentUserInfo)
+                const followList = await Common.getFollowList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
+                this.$store.commit("setFollowList", followList)
+                const followerList = await Common.getFollowerList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
+                this.$store.commit("setFollowerList", followerList)
+                this.$store.commit("setFriendList")
             }
         },
         logout () {

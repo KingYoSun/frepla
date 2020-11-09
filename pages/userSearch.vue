@@ -240,6 +240,7 @@ export default {
             }
             return status
         }
-    }
+    },
+    middleware: 'auth'
 }
 </script>

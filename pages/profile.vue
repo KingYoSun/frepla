@@ -358,7 +358,8 @@ export default {
             }
             this.overlay = false
         },
-    }
+    },
+    middleware: 'auth'
 }
 </script>
 

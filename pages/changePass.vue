@@ -131,6 +131,7 @@ export default {
                 this.failed(e, "パスワードの変更に失敗しました")
             }
         },
-    }
+    },
+    middleware: 'auth'
 }
 </script>

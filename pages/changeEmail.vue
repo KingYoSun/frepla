@@ -195,6 +195,7 @@ export default {
                 this.failed(e + "プロフィールの更新に失敗しました")
             }
         },
-    }
+    },
+    middleware: 'auth'
 }
 </script>
