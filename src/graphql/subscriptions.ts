@@ -2,6 +2,18 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateMessage = /* GraphQL */ `
+  subscription OnCreateMessage($toUserId: String) {
+    onCreateMessage(toUserId: $toUserId) {
+      toUserId
+      fromUserId
+      message
+      ttl
+      createdAt
+      updatedAt
+    }
+  }
+`;
 export const onCreateProfile = /* GraphQL */ `
   subscription OnCreateProfile {
     onCreateProfile {
@@ -60,42 +72,6 @@ export const onDeleteProfile = /* GraphQL */ `
       description
       followCount
       followerCount
-      createdAt
-      updatedAt
-    }
-  }
-`;
-export const onCreateMessage = /* GraphQL */ `
-  subscription OnCreateMessage {
-    onCreateMessage {
-      toUserId
-      fromUserId
-      message
-      ttl
-      createdAt
-      updatedAt
-    }
-  }
-`;
-export const onUpdateMessage = /* GraphQL */ `
-  subscription OnUpdateMessage {
-    onUpdateMessage {
-      toUserId
-      fromUserId
-      message
-      ttl
-      createdAt
-      updatedAt
-    }
-  }
-`;
-export const onDeleteMessage = /* GraphQL */ `
-  subscription OnDeleteMessage {
-    onDeleteMessage {
-      toUserId
-      fromUserId
-      message
-      ttl
       createdAt
       updatedAt
     }

@@ -14,7 +14,8 @@ type Profile @model @key(name: "sortByLastLogin", fields: ["div", "lastLogin"], 
   followerCount: Int
 }
 
-type Message @model @key(fields: ["toUserId", "fromUserId"]) {
+type Message @model(subscriptions: null)
+@key(fields: ["toUserId", "fromUserId"]) {
   toUserId: String!
   fromUserId: String!
   message: String!
@@ -30,4 +31,8 @@ type Friend @model
   id: String!
   status: String!
   toUserId: String!
+}
+
+type Subscription {
+  onCreateMessage(toUserId: String): Message @aws_subscribe(mutations: ["createMessage"])
 }

@@ -627,6 +627,22 @@ export type FriendsToFollowerQuery = {
   } | null,
 };
 
+export type OnCreateMessageSubscriptionVariables = {
+  toUserId?: string | null,
+};
+
+export type OnCreateMessageSubscription = {
+  onCreateMessage:  {
+    __typename: "Message",
+    toUserId: string,
+    fromUserId: string,
+    message: string,
+    ttl: number,
+    createdAt: string | null,
+    updatedAt: string | null,
+  } | null,
+};
+
 export type OnCreateProfileSubscription = {
   onCreateProfile:  {
     __typename: "Profile",
@@ -687,42 +703,6 @@ export type OnDeleteProfileSubscription = {
     followerCount: number | null,
     createdAt: string,
     updatedAt: string,
-  } | null,
-};
-
-export type OnCreateMessageSubscription = {
-  onCreateMessage:  {
-    __typename: "Message",
-    toUserId: string,
-    fromUserId: string,
-    message: string,
-    ttl: number,
-    createdAt: string | null,
-    updatedAt: string | null,
-  } | null,
-};
-
-export type OnUpdateMessageSubscription = {
-  onUpdateMessage:  {
-    __typename: "Message",
-    toUserId: string,
-    fromUserId: string,
-    message: string,
-    ttl: number,
-    createdAt: string | null,
-    updatedAt: string | null,
-  } | null,
-};
-
-export type OnDeleteMessageSubscription = {
-  onDeleteMessage:  {
-    __typename: "Message",
-    toUserId: string,
-    fromUserId: string,
-    message: string,
-    ttl: number,
-    createdAt: string | null,
-    updatedAt: string | null,
   } | null,
 };
 

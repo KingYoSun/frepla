@@ -10,9 +10,11 @@
                     Welcome to the FrePla Project
                 </v-card-title>
                 <v-card-text>
-                    <p>
-                        FrePlaはwebRTCを利用したP2PテキストSNSです
-                    </p>
+                    <v-select
+                    v-model="selectFriendId"
+                    :items="friendList"
+                    label="フレンドの選択"
+                    />
                     <div v-for="message in messages" :key="message.createdAt">
                         <v-row justify="center" style="color: #fff;">
                             <h3>{{ message.message }}</h3>
@@ -50,6 +52,7 @@
 import API, { graphqlOperation } from '@aws-amplify/api'
 import Logo from '~/components/Logo.vue'
 import VuetifyLogo from '~/components/VuetifyLogo.vue'
+import * as Common from '~/assets/js/common.js'
 
 export default {
     components: {
@@ -58,13 +61,29 @@ export default {
     },
     data () {
         return {
+            currentUserInfo: {},
             sendMessage: "",
             messages: [],
             subscription: null,
+            selectFriendId: "",
+            friendList: [],
             required: value => !!value || "必須事項です",
         }
     },
-    created () {
+    async mounted () {
+        this.currentUserInfo = this.$store.state.currentUserInfo
+        if (!this.currentUserInfo) {
+            this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+            this.$store.commit('login', this.currentUserInfo)
+        }
+        if (this.$store.state.friendList === undefined) {
+            const followList = await Common.getFollowList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
+            this.$store.commit("setFollowList", followList)
+            const followerList = await Common.getFollowerList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
+            this.$store.commit("setFollowerList", followerList)
+            this.$store.commit("setFriendList")
+        }
+        this.friendList = this.$store.state.friendList
         this.subscribe()
     },
     methods: {
@@ -93,8 +112,8 @@ export default {
             const createMessage = `
                 mutation CreateMessage {
                     createMessage(input: { 
-                        fromUserId: "${this.$store.state.currentUserInfo.attributes.sub}",
-                        toUserId: "1",
+                        fromUserId: "${this.currentUserInfo.attributes.sub}",
+                        toUserId: "${this.selectFriendId}",
                         message: "${this.sendMessage}",
                         ttl: ${this.getTTL()},
                         createdAt: "${this.getNowISO8601()}",
@@ -122,7 +141,7 @@ export default {
         subscribe () {
             const onCreatMessage = `
                 subscription OnCreateMessage {
-                    onCreateMessage {
+                    onCreateMessage(toUserId: "${this.currentUserInfo.attributes.sub}") {
                         fromUserId
                         toUserId
                         message
@@ -136,7 +155,6 @@ export default {
                 .subscribe({
                     next: (event) => {
                         if (event) {
-                            console.log(event)
                             const messageObj = event.value.data.onCreateMessage
                             this.messages.push(messageObj)
                         }
