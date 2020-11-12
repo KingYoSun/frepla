@@ -105,7 +105,7 @@
 <script>
 import TwitterText from 'twitter-text'
 import API, { graphqlOperation } from '@aws-amplify/api'
-import Storage from '@aws-amplify/storage'
+import * as Common from '~/assets/js/common.js'
 
 export default {
     name: 'UserCardSmall',
@@ -172,29 +172,11 @@ export default {
         },
         setImgUrlIcon () {
             this.icon.imgURL = this.user.iconUrl
-            this.setImgFile(this.icon)
+            Common.setImgFileUser(this.icon, this.user.identityId)
         },
         setImgUrlBanner () {
             this.banner.imgURL = this.user.banner
-            this.setImgFile(this.banner)
-        },
-        async setImgFile (obj) {
-            if (obj.imgURL !== null && obj.imgURL !== 'null' && this.user.identityId !== null) {
-                try {
-                        await Storage.get(obj.imgURL, {
-                            level: 'protected',
-                            identityId: this.user.identityId
-                        }).then((res) => {
-                                        obj.imgPreview = res
-                                        obj.showPreviewImg = true
-                                })
-                                .catch((e) => {
-                                        console.log("Getting Image Failed: " + e)
-                                })
-                } catch (e) {
-                        console.log("Getting Image Failed: " + e)
-                }
-            }
+            Common.setImgFileUser(this.banner, this.user.identityId)
         },
         async editFollowCount (diffDirection, user) {
             const id = (user === "me") ? this.$store.state.currentUserInfo.attributes.sub : this.user.id

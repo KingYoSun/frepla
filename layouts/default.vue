@@ -83,9 +83,9 @@
 
 <script>
 import API, { graphqlOperation } from '@aws-amplify/api'
-import Storage from '@aws-amplify/storage'
 import { AmplifyEventBus } from 'aws-amplify-vue'
 import * as Common from '~/assets/js/common.js'
+import WebRTC from '~/assets/js/webrtc.js'
 
 export default {
     data () {
@@ -96,7 +96,11 @@ export default {
             userMenu: null,
             fixed: false,
             clipped: false,
-            imgURL: null,
+            img: {
+                imgURL: null,
+                imgPreview: null,
+                showPreviewImg: false
+            },
             items: [
                 {
                     icon: 'mdi-home',
@@ -132,7 +136,12 @@ export default {
                 borderRadius: "10px",
                 boxShadow: "2px 2px 8px #000000; -2px -2px 8px #000000;"
             },
-            containerStyle: {}
+            containerStyle: {},
+            subscription: null,
+            localConnection: null,
+            dataChannel: null,
+            connectButton: true,
+            disconnectButton: false,
         }
     },
     async beforeCreate() {
@@ -149,7 +158,8 @@ export default {
     async created () {
         this.containerStyle = JSON.parse(JSON.stringify(this.defaultContainerStyle))
         this.setListener()
-        await this.getUserInfo()
+        this.getUserInfo()
+            .then(() => this.subscribe())
     },
     methods: {
         setListener () {
@@ -210,14 +220,15 @@ export default {
             `
             try {
                 await API.graphql(graphqlOperation(getProfile))
-                    .then((res) => {
+                    .then(async (res) => {
                         const items = res.data.getProfile
                         if (items == null || items == undefined || items == []) {
                             throw "Profile not found"
                         }
                         this.exitProfile = true
-                        this.imgURL = ("iconUrl" in items) ? items.iconUrl : null
-                        this.setImgFile()
+                        this.img.imgURL = ("iconUrl" in items) ? items.iconUrl : null
+                        Common.setImgFile(this.img)
+                            .then((res) => this.$store.commit("setImg", res.imgPreview))
                     })
             } catch (e) {
                 console.log("Profile not found: " + e)
@@ -226,22 +237,7 @@ export default {
         },
         removeImg () {
             this.$store.commit("removeImg")
-            this.imgURL = null
-        },
-        setImgFile () {
-            if (this.imgURL !== null && this.imgURL !== 'null') {
-                try {
-                    Storage.get(this.imgURL, {level: 'protected'})
-                        .then((res) => {
-                            this.$store.commit("setImg", res)
-                        })
-                        .catch((e) => {
-                            console.log("Getting Image Failed: " + e)
-                        })
-                } catch (e) {
-                    console.log("Getting Image Failed: " + e)
-                }
-            }
+            this.img.imgURL = null
         },
         updateLastLogin (currentUserInfo) {
             const date = new Date()
@@ -301,6 +297,29 @@ export default {
                 console.log("プロフィールの作成に失敗しました: " + e)
             }
         },
+        subscribe () {
+            const onCreatMessage = `
+                subscription OnCreateMessage {
+                    onCreateMessage(toUserId: "${this.$store.state.currentUserInfo.attributes.sub}") {
+                        fromUserId
+                        toUserId
+                        message
+                        ttl
+                        createdAt
+                        updatedAt
+                    }
+                }
+            `
+            this.subscription = API.graphql(graphqlOperation(onCreatMessage))
+                .subscribe({
+                    next: (event) => {
+                        if (event) {
+                            const messageObj = event.value.data.onCreateMessage
+                            console.log("receive")
+                        }
+                    }
+                })
+        }
     },
     computed: {
         filteredItems () {

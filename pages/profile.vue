@@ -103,6 +103,7 @@ import API, { graphqlOperation } from '@aws-amplify/api'
 import Storage from '@aws-amplify/storage'
 import CustomOverlay from '~/components/overlay.vue'
 import CustomDialog from '~/components/dialog.vue'
+import * as Common from '~/assets/js/common.js'
 
 export default {
     components: {
@@ -194,8 +195,8 @@ export default {
                         this.icon.imgURL = ("iconUrl" in items) ? items.iconUrl : null
                         this.banner.imgURL = ("banner" in items) ? items.banner : null
                         this.url = ("url" in items) ? items.url : null
-                        this.setImgFile(this.icon)
-                        this.setImgFile(this.banner)
+                        Common.setImgFile(this.icon)
+                        Common.setImgFile(this.banner)
                         this.overlay = false
                     })
             } catch (e) {
@@ -207,22 +208,6 @@ export default {
             obj.showPreviewImg = false
             obj.imgURL = null
             obj.imgFile = null
-        },
-        async setImgFile (obj) {
-            if (obj.imgURL !== null && obj.imgURL !== 'null') {
-                try {
-                    await Storage.get(obj.imgURL, {level: 'protected'})
-                        .then((res) => {
-                            obj.imgPreview = res
-                            obj.showPreviewImg = true
-                        })
-                        .catch((e) => {
-                            console.log("Getting Image Failed: " + e)
-                        })
-                } catch (e) {
-                    console.log("Getting Image Failed: " + e)
-                }
-            }
         },
         storeImgIcon (file) {
             this.icon.imgPreview = null
