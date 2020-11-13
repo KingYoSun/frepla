@@ -1,13 +1,12 @@
 import API, { graphqlOperation } from '@aws-amplify/api' 
 
-export class WebRTC {
-    constructor(fromUserID, toUserId, localConnection, dataChannel, connectButton, disconnectButton) {
-        this.fromUserID = fromUserID
-        this.toUserId = toUserId
-        this.localConnection = localConnection
-        this.dataChannel = dataChannel
-        this.connectButton = connectButton
-        this.disconnectButton = disconnectButton
+export default class WebRTC {
+    constructor(peer) {
+        this.fromUserId = peer.fromUserId
+        this.toUserId = peer.toUserId
+        this.localConnection = null
+        this.dataChannel = null
+        this.connected = false
         this.peerConnectionConfig = {
             iceServers: [{"urls": "stun:stun.l.google.com:19302"}],
             iceTransportPolicy: "all"    
@@ -15,8 +14,34 @@ export class WebRTC {
         this._posts = []
     }
 
-    get posts() {
+    get getPosts() {
         return this._posts
+    }
+
+    get getConnection() {
+        return this.localConnection
+    }
+
+    get getDataChannel() {
+        return this.dataChannel
+    }
+
+    get getStatus() {
+        return this.connected
+    }
+
+    
+    getNowISO8601 () {
+        const date = new Date()
+        const isoStr = date.toISOString()
+        return isoStr
+    }
+
+    getTTL () {
+        const date = new Date()
+        const unixtimenow = Math.floor(date.getTime() / 1000)
+        const timeToLive = unixtimenow + 60*10
+        return timeToLive
     }
 
     async sendOffer (offer) {
@@ -43,7 +68,7 @@ export class WebRTC {
         try {
             await API.graphql(graphqlOperation(createMessage))
                 .then( (res) => {
-                    console.log("Send Offer")
+                    console.log("Send Offer: " + this.toUserId + ' from: ' + this.fromUserId)
                 })
         } catch (e) {
             console.log("Sending Offer Failed: " + e)
@@ -52,13 +77,21 @@ export class WebRTC {
     
     initPeer () {
         this.localConnection = new RTCPeerConnection(this.peerConnectionConfig)
-        this.localConnection.onicecandidate = fucntion((event) => {
+        this.localConnection.onicecandidate = (event) => {
             if (event.candidate != null) {
                 console.log('got ice candidate')
                 this.sendOffer(event.candidate)
                 console.log('send ice canditate to remote')
             }
-        })
+        }
+        this.localConnection.oniceconnectionstatechange = () => {
+            if (this.localConnection.iceConnectionState === "closed" ||
+                this.localConnection.iceConnectionState === "failed" ||
+                this.localConnection.iceConnectionState === "disconnected") {
+                    console.log('ice closed!')
+                    this.disconnectPeers()
+            }
+        }
         /*
         this.localConnection.onnegotiationneeded = async (e) => {
             try {
@@ -82,9 +115,9 @@ export class WebRTC {
         let _offer = null
     
         this.dataChannel = this.localConnection.createDataChannel("dataChannel")
-        this.dataChannel.onmessage = this.handleReceiveMessage
-        this.dataChannel.onopen = this.handleDataChannelStatusChange
-        this.dataChannel.onclose = this.handleDataChannelStatusChange
+        this.dataChannel.onmessage = (e) => this.handleReceiveMessage(e)
+        this.dataChannel.onopen = () => this.handleDataChannelStatusChange()
+        this.dataChannel.onclose = () => this.handleDataChannelStatusChange()
     
         this.localConnection.createOffer()
             .then((offer) => {
@@ -94,16 +127,16 @@ export class WebRTC {
             .then(() => {
                 this.sendOffer(_offer)
             })
-            .catch(this.handleCreateDescriptionError)
+            .catch((e) => this.handleCreateDescriptionError(e))
     }
     
     receivePeer (messageObj) {
-        const remoteId = messageObj.fromUserId
+        this.toUserId = messageObj.fromUserId
         let _answer = null
     
         if (!this.localConnection) this.initPeer()
-        this.localConnection.ondatachannel = this.dataChannelCallback
-    
+        this.localConnection.ondatachannel = (e) => this.dataChannelCallback(e)
+
         let sdptext = messageObj.message
         sdptext = sdptext.slice(0, -1)
             .replace(/[\u0000-\u0019]+/g,"\\n")
@@ -122,13 +155,13 @@ export class WebRTC {
                             .then(() => {
                                 this.sendOffer(_answer)
                             })
-                            .catch(this.handleCreateDescriptionError)
+                            .catch((e) => this.handleCreateDescriptionError(e))
                     }
                 })
         } else if (offer.candidate) {
             this.localConnection.addIceCandidate(offer)
                 .then(() => console.log('added ice candidate'))
-                .catch(this.handleAddCandidateError)
+                .catch(() => this.handleAddCandidateError())
         }
         
     }
@@ -138,11 +171,11 @@ export class WebRTC {
     }
     
     handleLocalAddCandidateSuccess() {
-        this.connectButton = false
+        this.connected = true
     }
     
     handleRemoteAddCandidateSuccess() {
-        this.disconnectButton = true
+        this.connected = false
     }
     
     handleAddCandidateError() {
@@ -156,25 +189,25 @@ export class WebRTC {
         // ready for the next message.
     }
     
-    handleDataChannelStatusChange() {
+    handleDataChannelStatusChange () {
         console.log("statusChange")
         if (this.dataChannel) {
             let state = this.dataChannel.readyState;
+            console.log('state is: ' + state)
             if (state === "open") {
-                this.disconnectButton = true;
-                this.connectButton = false;
+                console.log('open connection!')
+                this.connected = true
             } else {
-                this.connectButton = true;
-                this.disconnectButton = false;
+                this.connected = false
             }
         }
     }
     
     dataChannelCallback(event) {
         this.dataChannel = event.channel
-        this.dataChannel.onmessage = this.handleReceiveMessage
-        this.dataChannel.onopen = this.handleDataChannelStatusChange
-        this.dataChannel.onclose = this.handleDataChannelStatusChange
+        this.dataChannel.onmessage = (e) => this.handleReceiveMessage(e)
+        this.dataChannel.onopen = () => this.handleDataChannelStatusChange()
+        this.dataChannel.onclose = () => this.handleDataChannelStatusChange()
     }
     
     handleReceiveMessage(event) {
@@ -192,7 +225,6 @@ export class WebRTC {
         this.localConnection = null;
         
         // Update user interface elements
-        this.connectButton = true;
-        this.disconnectButton = false;
+        this.connected = false
     }
 }

@@ -90,6 +90,7 @@ import WebRTC from '~/assets/js/webrtc.js'
 export default {
     data () {
         return {
+            currentUserInfo: {},
             exitProfile: false,
             backgroundColor: "gray darken-4",
             drawer: false,
@@ -138,10 +139,10 @@ export default {
             },
             containerStyle: {},
             subscription: null,
-            localConnection: null,
-            dataChannel: null,
-            connectButton: true,
-            disconnectButton: false,
+            connections: [],
+            connected: [],
+            unconnected: [],
+            connectedCount: 0
         }
     },
     async beforeCreate() {
@@ -160,6 +161,17 @@ export default {
         this.setListener()
         this.getUserInfo()
             .then(() => this.subscribe())
+    },
+    mounted () {
+        setInterval(() => {
+            this.connections.map((connection) => {
+                if(!connection.connection.getStatus) {
+                    console.log('Unconnected!')
+                } else {
+                    console.log('Connected!')
+                }
+            })
+        }, 5000)
     },
     methods: {
         setListener () {
@@ -187,20 +199,22 @@ export default {
             }
         },
         async getUserInfo () {
-            let currentUserInfo = this.$store.state.currentUserInfo
-            if (!currentUserInfo) {
-                currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
-                this.$store.commit('login', currentUserInfo)
+            this.currentUserInfo = this.$store.state.currentUserInfo
+            if (!this.currentUserInfo) {
+                this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+                this.$store.commit('login', this.currentUserInfo)
             }
-            this.isLoggedIn = Boolean(currentUserInfo)
+            this.isLoggedIn = Boolean(this.currentUserInfo)
             if (this.isLoggedIn) {
                 this.getProfile()
-                this.updateLastLogin(currentUserInfo)
-                const followList = await Common.getFollowList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
+                this.updateLastLogin(this.currentUserInfo)
+                const followList = await Common.getFollowList(this.currentUserInfo.attributes.sub, 'follow')
                 this.$store.commit("setFollowList", followList)
-                const followerList = await Common.getFollowerList(this.$store.state.currentUserInfo.attributes.sub, 'follow')
+                const followerList = await Common.getFollowerList(this.currentUserInfo.attributes.sub, 'follow')
                 this.$store.commit("setFollowerList", followerList)
                 this.$store.commit("setFriendList")
+                this.initPeers()
+                    .then(() => this.offerFriend())
             }
         },
         logout () {
@@ -209,10 +223,12 @@ export default {
             this.isLoggedIn = false
         },
         async getProfile () {
-            const currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+            if (!this.currentUserInfo) {
+                this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+            }
             const getProfile = `
                 query GetProfile {
-                    getProfile(id: "${currentUserInfo.attributes.sub}") {
+                    getProfile(id: "${this.currentUserInfo.attributes.sub}") {
                         id
                         iconUrl
                     }
@@ -232,7 +248,7 @@ export default {
                     })
             } catch (e) {
                 console.log("Profile not found: " + e)
-                this.createProfile(currentUserInfo)
+                this.createProfile(this.currentUserInfo)
             }
         },
         removeImg () {
@@ -315,10 +331,39 @@ export default {
                     next: (event) => {
                         if (event) {
                             const messageObj = event.value.data.onCreateMessage
-                            console.log("receive")
+                            this.receiveOffer(messageObj)
                         }
                     }
                 })
+        },
+        async initPeers () {
+            if (!this.currentUserInfo) {
+                this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
+            }
+            const friendIds = this.$store.state.friendList
+            friendIds.forEach(async (friendId) => {
+                const peer = {
+                    fromUserId: this.currentUserInfo.attributes.sub,
+                    toUserId: friendId
+                }
+                this.connections.push({
+                    toUserId: friendId,
+                    connection: new WebRTC(peer)
+                })
+            })
+        },
+        offerFriend () {
+            this.connections.map((peer) => {
+                if (this.connected.length > 0 && this.connected.include(peer.toUserId)) {
+                    return false
+                }
+                peer.connection.connectPeers()
+            })
+        },
+        receiveOffer (messageObj) {
+            const fromUserId = messageObj.fromUserId
+            const connection = this.connections.find(obj => obj.toUserId === fromUserId)
+            connection.connection.receivePeer(messageObj)
         }
     },
     computed: {

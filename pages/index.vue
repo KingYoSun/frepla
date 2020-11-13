@@ -92,17 +92,6 @@ export default {
         this.friendList = this.$store.state.friendList
     },
     methods: {
-        getNowISO8601 () {
-            const date = new Date()
-            const isoStr = date.toISOString()
-            return isoStr
-        },
-        getTTL () {
-            const date = new Date()
-            const unixtimenow = Math.floor(date.getTime() / 1000)
-            const timeToLive = unixtimenow + 60*10
-            return timeToLive
-        },
         validation () {
             try {
                 if(!this.$refs.formMessage.validate()) {
