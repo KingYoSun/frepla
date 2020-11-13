@@ -26,9 +26,9 @@
                 color="indigo"
                 @click="validation"
                 >
-                <v-icon dark>
-                    mdi-account-search
-                </v-icon>
+                    <v-icon dark>
+                        mdi-account-search
+                    </v-icon>
                 </v-btn>
             </v-row>
         </v-form>

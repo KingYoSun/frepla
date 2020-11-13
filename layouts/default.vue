@@ -66,6 +66,43 @@
             <v-container class="my-6" :style="containerStyle">
                 <nuxt />
             </v-container>
+            <div id="openConnectList">
+                <v-btn
+                color="purple"
+                fab
+                dark
+                @click="openConnectList"
+                >
+                    <v-icon dark>
+                    mdi-connection
+                    </v-icon>
+                </v-btn>
+            </div>
+            <v-dialog
+            v-model="dialogConnectList"
+            eager
+            max-width="800"
+            >
+                <v-card>
+                    <v-card-title class="justify-center">接続情報</v-card-title>
+                    <v-list-item v-for="(peer, index) in connected" :key="index">
+                        <user-card-row
+                        :peer="peer"
+                        @connect="connectFriend"
+                        @disconnect="disconnectFriend"
+                        :ref="'connection-' + peer.toUserId"
+                        />
+                    </v-list-item>
+                    <v-list-item v-for="(peer, index) in unconnected" :key="index">
+                        <user-card-row
+                        :peer="peer"
+                        @connect="connectFriend"
+                        @disconnect="disconnectFriend"
+                        :ref="'connection-' + peer.toUserId"
+                        />
+                    </v-list-item>
+                </v-card>
+            </v-dialog>
         </v-main>
         
         <v-footer
@@ -86,8 +123,12 @@ import API, { graphqlOperation } from '@aws-amplify/api'
 import { AmplifyEventBus } from 'aws-amplify-vue'
 import * as Common from '~/assets/js/common.js'
 import WebRTC from '~/assets/js/webrtc.js'
+import UserCardRow from '~/components/userCardRow.vue'
 
 export default {
+    components: {
+        UserCardRow
+    },
     data () {
         return {
             currentUserInfo: {},
@@ -140,9 +181,8 @@ export default {
             containerStyle: {},
             subscription: null,
             connections: [],
-            connected: [],
-            unconnected: [],
-            connectedCount: 0
+            connectedCount: 0,
+            dialogConnectList: false
         }
     },
     async beforeCreate() {
@@ -162,16 +202,27 @@ export default {
         this.getUserInfo()
             .then(() => this.subscribe())
     },
-    mounted () {
-        setInterval(() => {
-            this.connections.map((connection) => {
-                if(!connection.connection.getStatus) {
-                    console.log('Unconnected!')
+    computed: {
+        filteredItems () {
+            const self = this
+            return self.items.filter((item) => {
+                if (self.isLoggedIn) {
+                    return item.status.indexOf('loggedIn') !== -1
                 } else {
-                    console.log('Connected!')
+                    return item.status.indexOf('loggedOut') !== -1
                 }
             })
-        }, 5000)
+        },
+        connected () {
+            return this.connections.filter((connection) => {
+                return connection.connection.getStatus
+            })
+        },
+        unconnected () {
+            return this.connections.filter((connection) => {
+                return !(connection.connection.getStatus)
+            })
+        }
     },
     methods: {
         setListener () {
@@ -354,7 +405,7 @@ export default {
         },
         offerFriend () {
             this.connections.map((peer) => {
-                if (this.connected.length > 0 && this.connected.include(peer.toUserId)) {
+                if (this.connected != undefined && this.connected.length > 0 && this.connected.some((obj) => obj.toUserId !== peer.toUserId)) {
                     return false
                 }
                 peer.connection.connectPeers()
@@ -364,17 +415,22 @@ export default {
             const fromUserId = messageObj.fromUserId
             const connection = this.connections.find(obj => obj.toUserId === fromUserId)
             connection.connection.receivePeer(messageObj)
-        }
-    },
-    computed: {
-        filteredItems () {
-            const self = this
-            return self.items.filter((item) => {
-                if (self.isLoggedIn) {
-                    return item.status.indexOf('loggedIn') !== -1
-                } else {
-                    return item.status.indexOf('loggedOut') !== -1
-                }
+        },
+        connectFriend (id) {
+            const peer = this.connections.find((connection) => connection.toUserId === id)
+            peer.connection.connectPeers()
+        },
+        disconnectFriend (id) {
+            const peer = this.connections.find((connection) => connection.toUserId === id)
+            peer.connection.disconnectPeers()
+        },
+        openConnectList () {
+            this.dialogConnectList = !this.dialogConnectList
+            this.connected.map((peer) => {
+                this.$refs['connection-' + peer.toUserId][0].getProfile()
+            })
+            this.unconnected.map((peer) => {
+                this.$refs['connection-' + peer.toUserId][0].getProfile()
             })
         }
     }
@@ -385,5 +441,11 @@ export default {
 .main-footer {
     background-color: #616161;
     box-shadow: 5px 5px 20px black;
+}
+#openConnectList {
+    position: fixed;
+    z-index: 90;
+    right: 30px;
+    bottom: 40px;
 }
 </style>
