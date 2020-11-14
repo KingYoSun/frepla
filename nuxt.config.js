@@ -28,7 +28,8 @@ export default {
   plugins: [
     { src: '~/plugins/amplify.js', mode: 'client'},
     { src: '~/plugins/infiniteloading', mode: 'client'},
-    { src: '~/plugins/twitter-text', mode: 'client'}
+    { src: '~/plugins/twitter-text', mode: 'client'},
+    { src: '~/plugins/dexie', mode: 'client'}
   ],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
