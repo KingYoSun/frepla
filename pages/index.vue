@@ -64,6 +64,7 @@
                     @reply="setReply"
                     @delete="deletePost"
                     @rePost="rePost"
+                    @addLike="addLike"
                     />
                     <v-icon color="grey darken-2" style="position: absolute; bottom: 0px; left: 10px;">mdi-dots-vertical</v-icon>
                 </div>
@@ -74,6 +75,7 @@
                 @reply="setReply"
                 @delete="deletePost"
                 @rePost="rePost"
+                @addLike="addLike"
                 />
                 <div v-if="post.replyFromId != null && post.replyFromId != undefined && post.replyFromId.length > 0" style="position: relative;">
                     <v-icon color="grey darken-2" style="position: absolute; top: -30px; left: 10px;">mdi-dots-vertical</v-icon>
@@ -84,20 +86,9 @@
                     @reply="setReply"
                     @delete="deletePost"
                     @rePost="rePost"
+                    @addLike="addLike"
                     />
                 </div>
-                <v-divider />
-            </div>
-        </div>
-        <div v-if="selectedTimeline === 'myPosts'" class="mt-4" >
-            <div v-for="post in myPosts" :key="post.id">
-                <post
-                :ref="'post-' + post.id"
-                :post="post"
-                :showButtons="true"
-                @reply="setReply"
-                @delete="deletePost"
-                />
                 <v-divider />
             </div>
         </div>
@@ -311,8 +302,7 @@ export default {
                 this.messageInputBox = ""
                 this.dialogReply = false
                 this.replyToId = ""
-                if (this.selectedTimeline === "posts") this.setPost(this.offset)
-                if (this.selectedTimeline === "myPosts") this.setMyPost(this.offset)
+                this.setPost(this.offset)
             }).catch((e) => {
                 console.log('Posting failed: ' + e)
             })
@@ -346,15 +336,13 @@ export default {
                 this.db.posts.delete(targetPost.id)
             }).then(() => {
                 console.log('Post Deleted!')
-                if (this.selectedTimeline === "posts") this.setPost(this.offset)
-                if (this.selectedTimeline === "myPosts") this.setMyPost(this.offset)
+                this.setPost(this.offset)
             }).catch((e) => {
                 console.log('Deleting Post is Failed: ' + e)
             })
         },
         rePost (targetPost) {
             this.db.transaction("rw", this.db.posts, () => {
-                console.log(targetPost)
                 if (!targetPost.rePost.includes(this.currentUserInfo.attributes.sub)) {
                     targetPost.rePost.push(this.currentUserInfo.attributes.sub)
                     this.db.posts.update(targetPost.id, {
@@ -364,10 +352,25 @@ export default {
                 }
             }).then(() => {
                 console.log('rePost!')
-                if (this.selectedTimeline === "posts") this.setPost(this.offset)
-                if (this.selectedTimeline === "myPosts") this.setMyPost(this.offset)
+                this.setPost(this.offset)
             }).catch((e) => {
                 console.log('rePost is Failed: ' + e)
+            })
+        },
+        addLike (targetPost) {
+            this.db.transaction("rw", this.db.posts, () => {
+                if (!targetPost.like.includes(this.currentUserInfo.attributes.sub)) {
+                    targetPost.like.push(this.currentUserInfo.attributes.sub)
+                    this.db.posts.update(targetPost.id, {
+                        like: targetPost.like,
+                        updatedAt: this.getNow()
+                    })
+                }
+            }).then(() => {
+                console.log('like!')
+                this.setPost(this.offset)
+            }).catch((e) => {
+                console.log('Adding like is Failed: ' + e)
             })
         },
         async getProfile () {

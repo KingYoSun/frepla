@@ -40,8 +40,20 @@
         color="pink"
         icon
         class="mx-4"
+        :disabled="post.like.includes($store.state.currentUserInfo)"
+        @click="addLike"
         >
             <v-icon>mdi-heart</v-icon>
+        </v-btn>
+        <v-btn
+        color="grey lighten-3"
+        text
+        class="mr-2"
+        style="padding: 0px;"
+        min-width="20"
+        :disabled="post.like.includes($store.state.currentUserInfo)"
+        >
+            {{ (post.like != null && post.like != undefined) ? post.like.length : 0 }}
         </v-btn>
         <!--
         <v-btn
@@ -96,6 +108,9 @@ export default {
         },
         rePost () {
             this.$emit("rePost", this.post)
+        },
+        addLike () {
+            this.$emit("addLike", this.post)
         }
     }
 }

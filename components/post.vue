@@ -1,7 +1,12 @@
 <template>
     <div class="my-2">
-        <v-row v-if="post.rePost.includes($store.state.currentUserInfo.attributes.sub)">
-            <v-icon color="grey darken-2">mdi-cached</v-icon><h4 style="color: #5a5a5a;">リポストしました</h4>
+        <v-row>
+            <div v-if="post.rePost.includes($store.state.currentUserInfo.attributes.sub)">
+                <v-icon color="grey darken-2">mdi-cached</v-icon><span class="font-weight-bold" style="color: #5a5a5a;">リポストしました</span>
+            </div>
+            <div v-if="post.like.includes($store.state.currentUserInfo.attributes.sub)" class="ml-2">
+                <v-icon color="grey darken-2">mdi-heart</v-icon><span class="font-weight-bold" style="color: #5a5a5a;">いいねしました</span>
+            </div>
         </v-row>
         <v-row justify="start" align="start">
             <div v-if="user.showPreviewImg" class="mx-1">
@@ -27,6 +32,7 @@
                     @delete="deletePost"
                     @reply="setReply"
                     @rePost="rePost"
+                    @addLike="addLike"
                     />
                 </v-row>
             </div>
@@ -108,6 +114,9 @@ export default {
         },
         rePost (post) {
             this.$emit("rePost", post)
+        },
+        addLike (post) {
+            this.$emit("addLike", post)
         },
         async getProfile (post, user) {
             const getProfile = `
