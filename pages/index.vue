@@ -63,6 +63,7 @@
                     :showButtons="true"
                     @reply="setReply"
                     @delete="deletePost"
+                    @rePost="rePost"
                     />
                     <v-icon color="grey darken-2" style="position: absolute; bottom: 0px; left: 10px;">mdi-dots-vertical</v-icon>
                 </div>
@@ -72,6 +73,7 @@
                 :showButtons="true"
                 @reply="setReply"
                 @delete="deletePost"
+                @rePost="rePost"
                 />
                 <div v-if="post.replyFromId != null && post.replyFromId != undefined && post.replyFromId.length > 0" style="position: relative;">
                     <v-icon color="grey darken-2" style="position: absolute; top: -30px; left: 10px;">mdi-dots-vertical</v-icon>
@@ -81,6 +83,7 @@
                     :showButtons="true"
                     @reply="setReply"
                     @delete="deletePost"
+                    @rePost="rePost"
                     />
                 </div>
                 <v-divider />
@@ -347,6 +350,24 @@ export default {
                 if (this.selectedTimeline === "myPosts") this.setMyPost(this.offset)
             }).catch((e) => {
                 console.log('Deleting Post is Failed: ' + e)
+            })
+        },
+        rePost (targetPost) {
+            this.db.transaction("rw", this.db.posts, () => {
+                console.log(targetPost)
+                if (!targetPost.rePost.includes(this.currentUserInfo.attributes.sub)) {
+                    targetPost.rePost.push(this.currentUserInfo.attributes.sub)
+                    this.db.posts.update(targetPost.id, {
+                        rePost: targetPost.rePost,
+                        updatedAt: this.getNow()
+                    })
+                }
+            }).then(() => {
+                console.log('rePost!')
+                if (this.selectedTimeline === "posts") this.setPost(this.offset)
+                if (this.selectedTimeline === "myPosts") this.setMyPost(this.offset)
+            }).catch((e) => {
+                console.log('rePost is Failed: ' + e)
             })
         },
         async getProfile () {

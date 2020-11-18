@@ -15,14 +15,26 @@
         style="padding: 0px;"
         min-width="20"
         >
-            {{ (this.post.replyFromId != null && this.post.replyFromId != undefined) ? post.replyFromId.length : 0 }}
+            {{ (post.replyFromId != null && post.replyFromId != undefined) ? post.replyFromId.length : 0 }}
         </v-btn>
         <v-btn
         color="green"
         icon
         class="mx-4"
+        :disabled="post.rePost.includes($store.state.currentUserInfo)"
+        @click="rePost"
         >
             <v-icon>mdi-cached</v-icon>
+        </v-btn>
+        <v-btn
+        color="grey lighten-3"
+        text
+        class="mr-2"
+        style="padding: 0px;"
+        min-width="20"
+        :disabled="post.rePost.includes($store.state.currentUserInfo)"
+        >
+            {{ (post.rePost != null && post.rePost != undefined) ? post.rePost.length : 0 }}
         </v-btn>
         <v-btn
         color="pink"
@@ -82,6 +94,9 @@ export default {
         deletePost () {
             this.$emit("delete", this.post)
         },
+        rePost () {
+            this.$emit("rePost", this.post)
+        }
     }
 }
 </script>
