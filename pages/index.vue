@@ -315,6 +315,7 @@ export default {
             })
         },
         setReply (targetPost) {
+            this.messageInputBox = "@" + targetPost.name + this.messageInputBox
             this.replyToId = targetPost.id
             this.replyToPost = targetPost
             this.dialogReply = true
