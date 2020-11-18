@@ -1,7 +1,7 @@
 <template>
     <v-list-item-content v-if="user.show">
         <v-row justify="center" align="center">
-            <div class="user-link-image-small mx-1">
+            <div v-if="icon.showPreviewImg" class="mx-1">
                 <v-img
                 :src="icon.imgPreview"
                 alt="アイコンのプレビュー"

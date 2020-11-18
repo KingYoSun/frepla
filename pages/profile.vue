@@ -191,7 +191,7 @@ export default {
                     .then((res) => {
                         const items = res.data.getProfile
                         this.viewName = ("viewName" in items) ? items.viewName : ""
-                        this.description = ("description" in items) ? items.description : ""
+                        this.description = ("description" in items) ? items.description.replace(/\\n/g, '\n') : ""
                         this.icon.imgURL = ("iconUrl" in items) ? items.iconUrl : null
                         this.banner.imgURL = ("banner" in items) ? items.banner : null
                         this.url = ("url" in items) ? items.url : null
@@ -311,7 +311,7 @@ export default {
                     email: "${this.currentUserInfo.attributes.email}",
                     div: 1,
                     lastLogin: ${nowUnix},
-                    description: "${this.description}",
+                    description: "${this.description.replace(/\n/g,'\\n')}",
                     iconUrl: "${this.icon.imgURL}",
                     banner: "${this.banner.imgURL}",
                     url: "${this.url}",

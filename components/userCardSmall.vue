@@ -2,12 +2,12 @@
     <div class="user-banner-wrapper-small" :style="{ backgroundImage: 'url(' + banner.imgPreview + ')' }">
         <div class="user-banner-container-small">
             <v-row class="user-info-first-small">
-                <div class="user-link-image-small">
+                <div>
                     <v-img
                     :src="icon.imgPreview"
                     alt="アイコンのプレビュー"
                     @error="resetImgURL(icon)"
-                    class="user-image-small"
+                    class="user-image-mid"
                     :max-width="100"
                     />
                 </div>
@@ -355,13 +355,6 @@ export default {
     display: flex;
     align-items: center;
     padding: 3px 12px;
-}
-.user-image-small {
-    max-width: 60px;
-    width: 20vw;
-    height: auto;
-    border-radius: 50%;
-    border: 3px var(--text-color-main) solid;
 }
 .user-link-small {
     display: flex;

@@ -16,7 +16,7 @@
                         <v-img
                         :src="$store.state.imgPreview"
                         v-if="$store.state.showPreviewImg"
-                        alt="商品画像のプレビュー"
+                        alt="ユーザアイコン"
                         @error="removeImg"
                         class="profileIcon"
                         :max-width="50"

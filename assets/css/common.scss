@@ -1,3 +1,24 @@
 .profileIcon {
     border-radius: 50%;
 }
+
+.user-image-small {
+    max-width: 45px;
+    width: 20vw;
+    height: auto;
+    border-radius: 50%;
+    border: 3px var(--text-color-main) solid;
+}
+
+.user-image-mid {
+    max-width: 60px;
+    width: 20vw;
+    height: auto;
+    border-radius: 50%;
+    border: 3px var(--text-color-main) solid;
+}
+
+.description {
+    white-space:pre-line;
+    word-wrap: break-word;
+}
