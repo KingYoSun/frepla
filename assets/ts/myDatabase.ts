@@ -1,9 +1,10 @@
 import Dexie from 'dexie'
 
-const SCHEMA_VERSION = 9
+const SCHEMA_VERSION = 10
 
 export class MyDatabase extends Dexie {
     public posts?: Dexie.Table<IPost, number>
+    public myPosts?: Dexie.Table<IPost, number>
     public notice?: Dexie.Table<INotice, number>
 
     constructor () {
@@ -11,10 +12,12 @@ export class MyDatabase extends Dexie {
 
         this.version(SCHEMA_VERSION).stores({
             posts: "++id, name, viewName, userId, text, files, createdAt, updatedAt, replyToId, replyFromId, toUsers, like, rePost",
+            myPosts: "++id, name, viewName, userId, text, files, createdAt, updatedAt, replyToId, replyFromId, toUsers, like, rePost",
             notice: "++id, category, text, createdAt"
         })
 
         this.posts = this.table("posts")
+        this.myPosts = this.table("myPosts")
         this.notice = this.table("notice")
     }
     

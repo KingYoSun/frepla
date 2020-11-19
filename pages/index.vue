@@ -181,10 +181,10 @@ export default {
         }
     },
     async mounted () {
+        this.db = new MyDatabase()
         this.getCurrentUserInfo()
          .then(async () => this.getProfile())
          .then(async () => {
-             this.db = new MyDatabase()
              this.setPost(this.offset)
              this.setMyPost(this.offset)
              if (this.$store.state.friendList === undefined) {
@@ -270,7 +270,7 @@ export default {
                         })
         },
         async putMyPosts () {
-            this.db.transaction("rw", this.db.posts, () => {
+            this.db.transaction("rw", this.db.posts, this.db.myPosts, () => {
                 const id =this.myProfile.name + '-' + String(this.getNow())
                 const post = {
                     id: id,
@@ -287,6 +287,7 @@ export default {
                     rePost: []
                 }
                 this.db.posts.add(post)
+                this.db.myPosts.add(post)
                 if (this.replyToId !== "") {
                     if ('replyFromId' in this.replyToPost && this.replyToPost.replyFromId.length > 0) {
                         this.replyToPost.replyFromId.push(id)
@@ -303,6 +304,7 @@ export default {
                 this.dialogReply = false
                 this.replyToId = ""
                 this.setPost(this.offset)
+                this.setMyPost(this.offset)
             }).catch((e) => {
                 console.log('Posting failed: ' + e)
             })
@@ -314,7 +316,7 @@ export default {
             this.dialogReply = true
         },
         deletePost (targetPost) {
-            this.db.transaction("rw", this.db.posts, async () => {
+            this.db.transaction("rw", this.db.posts, this.myPosts, async () => {
                 if (targetPost.replyToId != undefined && targetPost.replyToId != null && targetPost.replyToId != "") {
                     const delPost = await this.getPost(targetPost.replyToId)
                     const replyFromId = delPost.replyFromId.filter((id) => {
@@ -334,9 +336,13 @@ export default {
                     })
                 }
                 this.db.posts.delete(targetPost.id)
+                if (targetPost.userId == this.currentUserInfo.attributes.sub) {
+                    this.db.myPosts.delete(targetPost.id)
+                }
             }).then(() => {
                 console.log('Post Deleted!')
                 this.setPost(this.offset)
+                this.setMyPost(this.offset)
             }).catch((e) => {
                 console.log('Deleting Post is Failed: ' + e)
             })
@@ -349,10 +355,17 @@ export default {
                         rePost: targetPost.rePost,
                         updatedAt: this.getNow()
                     })
+                    if (targetPost.userId == this.currentUserInfo.attributes.sub) {
+                        this.db.myPosts.update(targetPost.id, {
+                            rePost: targetPost.rePost,
+                            updatedAt: this.getNow()
+                        })
+                    }
                 }
             }).then(() => {
                 console.log('rePost!')
                 this.setPost(this.offset)
+                this.setMyPost(this.offset)
             }).catch((e) => {
                 console.log('rePost is Failed: ' + e)
             })
@@ -365,10 +378,17 @@ export default {
                         like: targetPost.like,
                         updatedAt: this.getNow()
                     })
+                    if (targetPost.userId == this.currentUserInfo.attributes.sub) {
+                        this.db.myPosts.update(targetPost.id, {
+                            like: targetPost.like,
+                            updatedAt: this.getNow()
+                        })
+                    }
                 }
             }).then(() => {
                 console.log('like!')
                 this.setPost(this.offset)
+                this.setMyPost(this.offset)
             }).catch((e) => {
                 console.log('Adding like is Failed: ' + e)
             })
