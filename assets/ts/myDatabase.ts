@@ -1,6 +1,6 @@
 import Dexie from 'dexie'
 
-const SCHEMA_VERSION = 10
+const SCHEMA_VERSION = 12
 
 export class MyDatabase extends Dexie {
     public posts?: Dexie.Table<IPost, number>

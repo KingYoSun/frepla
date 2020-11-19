@@ -32,7 +32,9 @@
                     @delete="deletePost"
                     @reply="setReply"
                     @rePost="rePost"
+                    @removeRePost="removeRePost"
                     @addLike="addLike"
+                    @removeLike="removeLike"
                     />
                 </v-row>
             </div>
@@ -115,8 +117,14 @@ export default {
         rePost (post) {
             this.$emit("rePost", post)
         },
+        removeRePost (post) {
+            this.$emit("removeRePost", post)
+        },
         addLike (post) {
             this.$emit("addLike", post)
+        },
+        removeLike (post) {
+            this.$emit("removeLike", post)
         },
         async getProfile (post, user) {
             const getProfile = `

@@ -64,7 +64,9 @@
                     @reply="setReply"
                     @delete="deletePost"
                     @rePost="rePost"
+                    @removeRePost="removeRePost"
                     @addLike="addLike"
+                    @removeLike="removeLike"
                     />
                     <v-icon color="grey darken-2" style="position: absolute; bottom: 0px; left: 10px;">mdi-dots-vertical</v-icon>
                 </div>
@@ -75,7 +77,9 @@
                 @reply="setReply"
                 @delete="deletePost"
                 @rePost="rePost"
+                @removeRePost="removeRePost"
                 @addLike="addLike"
+                @removeLike="removeLike"
                 />
                 <div v-if="post.replyFromId != null && post.replyFromId != undefined && post.replyFromId.length > 0" style="position: relative;">
                     <v-icon color="grey darken-2" style="position: absolute; top: -30px; left: 10px;">mdi-dots-vertical</v-icon>
@@ -86,7 +90,9 @@
                     @reply="setReply"
                     @delete="deletePost"
                     @rePost="rePost"
+                    @removeRePost="removeRePost"
                     @addLike="addLike"
+                    @removeLike="removeLike"
                     />
                 </div>
                 <v-divider />
@@ -348,7 +354,7 @@ export default {
             })
         },
         rePost (targetPost) {
-            this.db.transaction("rw", this.db.posts, () => {
+            this.db.transaction("rw", this.db.posts, this.db.myPosts, () => {
                 if (!targetPost.rePost.includes(this.currentUserInfo.attributes.sub)) {
                     targetPost.rePost.push(this.currentUserInfo.attributes.sub)
                     this.db.posts.update(targetPost.id, {
@@ -360,6 +366,8 @@ export default {
                             rePost: targetPost.rePost,
                             updatedAt: this.getNow()
                         })
+                    } else {
+                        this.db.myPosts.put(targetPost)
                     }
                 }
             }).then(() => {
@@ -370,8 +378,35 @@ export default {
                 console.log('rePost is Failed: ' + e)
             })
         },
+        removeRePost (targetPost) {
+            this.db.transaction("rw", this.db.posts, this.db.myPosts, () => {
+                if (targetPost.rePost.includes(this.currentUserInfo.attributes.sub)) {
+                    const rePostFiltered = targetPost.rePost.filter((id) => {
+                        return id != this.currentUserInfo.attributes.sub
+                    })
+                    this.db.posts.update(targetPost.id, {
+                        rePost: rePostFiltered,
+                        updatedAt: this.getNow()
+                    })
+                    if (targetPost.userId == this.currentUserInfo.attributes.sub) {
+                        this.db.myPosts.update(targetPost.id, {
+                            rePost: rePostFiltered,
+                            updatedAt: this.getNow()
+                        })
+                    } else {
+                        this.db.myPosts.delete(targetPost.id)
+                    }
+                }
+            }).then(() => {
+                console.log('remove rePost!')
+                this.setPost(this.offset)
+                this.setMyPost(this.offset)
+            }).catch((e) => {
+                console.log('Removing rePost is Failed: ' + e)
+            })
+        },
         addLike (targetPost) {
-            this.db.transaction("rw", this.db.posts, () => {
+            this.db.transaction("rw", this.db.posts, this.db.myPosts, () => {
                 if (!targetPost.like.includes(this.currentUserInfo.attributes.sub)) {
                     targetPost.like.push(this.currentUserInfo.attributes.sub)
                     this.db.posts.update(targetPost.id, {
@@ -391,6 +426,31 @@ export default {
                 this.setMyPost(this.offset)
             }).catch((e) => {
                 console.log('Adding like is Failed: ' + e)
+            })
+        },
+        removeLike (targetPost) {
+            this.db.transaction("rw", this.db.posts, this.db.myPosts, () => {
+                if (targetPost.like.includes(this.currentUserInfo.attributes.sub)) {
+                    const likeFiltered = targetPost.like.filter((id) => {
+                        return id != this.currentUserInfo.attributes.sub
+                    })
+                    this.db.posts.update(targetPost.id, {
+                        like: likeFiltered,
+                        updatedAt: this.getNow()
+                    })
+                    if (targetPost.userId == this.currentUserInfo.attributes.sub) {
+                        this.db.myPosts.update(targetPost.id, {
+                            like: likeFiltered,
+                            updatedAt: this.getNow()
+                        })
+                    }
+                }
+            }).then(() => {
+                console.log('remove like!')
+                this.setPost(this.offset)
+                this.setMyPost(this.offset)
+            }).catch((e) => {
+                console.log('Removing like is Failed: ' + e)
             })
         },
         async getProfile () {
