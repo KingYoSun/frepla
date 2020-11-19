@@ -322,7 +322,7 @@ export default {
             this.dialogReply = true
         },
         deletePost (targetPost) {
-            this.db.transaction("rw", this.db.posts, this.myPosts, async () => {
+            this.db.transaction("rw", this.db.posts, this.db.myPosts, async () => {
                 if (targetPost.replyToId != undefined && targetPost.replyToId != null && targetPost.replyToId != "") {
                     const delPost = await this.getPost(targetPost.replyToId)
                     const replyFromId = delPost.replyFromId.filter((id) => {
