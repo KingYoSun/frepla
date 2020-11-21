@@ -209,14 +209,35 @@ export default class WebRTC{
     
     handleReceiveMessage(event) {
         const data = JSON.parse(event.data)
-        this.db.transaction("rw", this.db.posts, this.db.requests, () => {
+        this.db.transaction("rw", this.db.posts, this.db.requests, async () => {
             if (data.type == "request") this.db.requests.add(data.data)
-            if (data.type == "post") this.db.posts.put(data.data)
+            if (data.type == "post") {
+                const targetPost = await this.getTargetPost(data.data.id)
+                if (targetPost == null || targetPost == undefined) {
+                    this.db.posts.add(data.data)
+                } else {
+                    let like = targetPost.like.concat(data.data.like)
+                    like = [...new Set(like)]
+                    let rePost = targetPost.rePost.concat(data.data.rePost)
+                    rePost = [...new Set(rePost)]
+                    this.db.posts.update(data.data.id, {
+                        like: like,
+                        rePost: rePost,
+                        updatedAt: data.data.updatedAt
+                    })
+                }
+            }
         }).then(() => {
             console.log( data.type + " downloaded from peer!")
         }).catch((e) => {
             console.log("Downloading message from peer is Failed: " + e)
         })
+    }
+
+    async getTargetPost(id) {
+        return await this.db.posts.where("id")
+                                    .equals(id)
+                                    .first()
     }
 
     disconnectPeers() {

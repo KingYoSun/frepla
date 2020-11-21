@@ -491,6 +491,24 @@ export default {
         initDB () {
             this.db.open()
             const self = this
+            /*
+            this.db.posts.hook("updating", function(mods, primKey, obj, trans) {
+                trans.on("complete", function () {
+                    mods.keys.map((key) => {
+                        obj[key] = mods[key]
+                    })
+                    const jsonObj = {
+                        type: "post",
+                        data: obj
+                    }
+                    if (self.connected.length > 0) {
+                        self.connected.map((peer) => {
+                            peer.connection.sendMessage(JSON.stringify(jsonObj))
+                        })
+                    }
+                })
+            })
+            */
             this.db.myPosts.hook("creating", function(primKey, obj, trans) {
                 trans.on("complete", function() {
                     const jsonObj = {
@@ -509,22 +527,39 @@ export default {
                     return peer.toUserId == obj.fromUserId
                 })
                 trans.on("complete", function () {
-                    trans.db.myPosts.where("updatedAt")
-                                    .above(obj.untilDate)
-                                    .reverse()
-                                    .sortBy("updatedAt")
-                                    .then((myPosts) => {
+                    self.db.myPosts.orderBy("updatedAt")
+                                    .desc()
+                                    .limit(100)
+                                    .toArray((myPosts) => {
                                         if (myPosts.length > 0) {
                                             myPosts.map(post => {
-                                                const jsonObj = {
-                                                    type:"post",
-                                                    data: post
+                                                if (post.updatedAt > obj.untilDate) {
+                                                    const jsonObj = {
+                                                        type:"post",
+                                                        data: post
+                                                    }
+                                                    targetPeer.connection.sendMessage(JSON.stringify(jsonObj))
                                                 }
-                                                targetPeer.connection.sendMessage(JSON.stringify(jsonObj))
                                             })
                                         }
                                     })
-                    trans.db.requests.delete(primKey)
+                    self.db.posts.orderBy("updatedAt")
+                                    .desc()
+                                    .limit(100)
+                                    .toArray((posts) => {
+                                        if (posts.length > 0) {
+                                            posts.map(post => {
+                                                if (post.updatedAt > obj.untilDate) {
+                                                    const jsonObj = {
+                                                        type:"post",
+                                                        data: post
+                                                    }
+                                                    targetPeer.connection.sendMessage(JSON.stringify(jsonObj))
+                                                }
+                                            })
+                                        }
+                                    })
+                    self.db.requests.delete(primKey)
                 })
             })
         },
