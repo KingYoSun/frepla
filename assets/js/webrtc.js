@@ -1,7 +1,8 @@
 import API, { graphqlOperation } from '@aws-amplify/api' 
+import { store } from '~/store/'
 
-export default class WebRTC {
-    constructor(peer) {
+export default class WebRTC{
+    constructor(peer, db) {
         this.fromUserId = peer.fromUserId
         this.toUserId = peer.toUserId
         this.localConnection = null
@@ -11,11 +12,7 @@ export default class WebRTC {
             iceServers: [{"urls": "stun:stun.l.google.com:19302"}],
             iceTransportPolicy: "all"    
         }
-        this._posts = []
-    }
-
-    get getPosts() {
-        return this._posts
+        this.db = db
     }
 
     get getConnection() {
@@ -68,7 +65,7 @@ export default class WebRTC {
         try {
             await API.graphql(graphqlOperation(createMessage))
                 .then( (res) => {
-                    console.log("Send Offer: " + this.toUserId + ' from: ' + this.fromUserId)
+                    //console.log("Send Offer: " + this.toUserId + ' from: ' + this.fromUserId)
                 })
         } catch (e) {
             console.log("Sending Offer Failed: " + e)
@@ -79,16 +76,16 @@ export default class WebRTC {
         this.localConnection = new RTCPeerConnection(this.peerConnectionConfig)
         this.localConnection.onicecandidate = (event) => {
             if (event.candidate != null) {
-                console.log('got ice candidate')
+                //console.log('got ice candidate')
                 this.sendOffer(event.candidate)
-                console.log('send ice canditate to remote')
+                //console.log('send ice canditate to remote')
             }
         }
         this.localConnection.oniceconnectionstatechange = () => {
             if (this.localConnection.iceConnectionState === "closed" ||
                 this.localConnection.iceConnectionState === "failed" ||
                 this.localConnection.iceConnectionState === "disconnected") {
-                    console.log('ice closed!')
+                    //console.log('ice closed!')
                     this.disconnectPeers()
             }
         }
@@ -144,7 +141,7 @@ export default class WebRTC {
     
         if (offer.sdp) {
             this.localConnection.setRemoteDescription(offer)
-                .then(() => console.log('createAnswer'))
+                //.then(() => console.log('createAnswer'))
                 .then(() => {
                     if (offer.type == 'offer') {
                         this.localConnection.createAnswer()
@@ -160,7 +157,7 @@ export default class WebRTC {
                 })
         } else if (offer.candidate) {
             this.localConnection.addIceCandidate(offer)
-                .then(() => console.log('added ice candidate'))
+                //.then(() => console.log('added ice candidate'))
                 .catch(() => this.handleAddCandidateError())
         }
         
@@ -179,23 +176,23 @@ export default class WebRTC {
     }
     
     handleAddCandidateError() {
-        console.log("Oh noes! addICECandidate failed!")
+        //console.log("Oh noes! addICECandidate failed!")
     }
     
     sendMessage(message) {
         this.dataChannel.send(message)
-        console.log('send message: ' + message)
+        //console.log('send message: ' + message)
         // Clear the input box and re-focus it, so that we're
         // ready for the next message.
     }
     
     handleDataChannelStatusChange () {
-        console.log("statusChange")
+        //console.log("statusChange")
         if (this.dataChannel) {
             let state = this.dataChannel.readyState;
-            console.log('state is: ' + state)
+            //console.log('state is: ' + state)
             if (state === "open") {
-                console.log('open connection!')
+                //console.log('open connection!')
                 this.connected = true
             } else {
                 this.connected = false
@@ -211,7 +208,15 @@ export default class WebRTC {
     }
     
     handleReceiveMessage(event) {
-        this._posts.push(event.data)
+        const data = JSON.parse(event.data)
+        this.db.transaction("rw", this.db.posts, this.db.requests, () => {
+            if (data.type == "request") this.db.requests.add(data.data)
+            if (data.type == "post") this.db.posts.put(data.data)
+        }).then(() => {
+            console.log( data.type + " downloaded from peer!")
+        }).catch((e) => {
+            console.log("Downloading message from peer is Failed: " + e)
+        })
     }
 
     disconnectPeers() {

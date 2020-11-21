@@ -76,7 +76,7 @@ export default {
     watch: {
         peer: {
             handler: function (newPeer, oldPeer) {
-                console.log('watch!')
+                //console.log('watch!')
                 if (newPeer.connection.connected) {
                     this.connectButtonDisable = true
                     this.disconnectButtonDisable = false

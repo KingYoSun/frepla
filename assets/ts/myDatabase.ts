@@ -1,11 +1,12 @@
 import Dexie from 'dexie'
 
-const SCHEMA_VERSION = 12
+const SCHEMA_VERSION = 14
 
 export class MyDatabase extends Dexie {
     public posts?: Dexie.Table<IPost, number>
     public myPosts?: Dexie.Table<IPost, number>
-    public notice?: Dexie.Table<INotice, number>
+    public notices?: Dexie.Table<INotice, number>
+    public requests?: Dexie.Table<IRequest, number>
 
     constructor () {
         super('MyDatabase')
@@ -13,12 +14,14 @@ export class MyDatabase extends Dexie {
         this.version(SCHEMA_VERSION).stores({
             posts: "++id, name, viewName, userId, text, files, createdAt, updatedAt, replyToId, replyFromId, toUsers, like, rePost",
             myPosts: "++id, name, viewName, userId, text, files, createdAt, updatedAt, replyToId, replyFromId, toUsers, like, rePost",
-            notice: "++id, category, text, createdAt"
+            notices: "++id, category, text, createdAt",
+            requests: "++id, fromUserId, untilDate"
         })
 
         this.posts = this.table("posts")
         this.myPosts = this.table("myPosts")
-        this.notice = this.table("notice")
+        this.notices = this.table("notices")
+        this.requests = this.table("requests")
     }
     
 }
@@ -44,4 +47,10 @@ export interface INotice {
     category: string
     text: string
     createdAt: number
+}
+
+export interface IRequest {
+    id?: string,
+    fromUserId: string,
+    untilDate: number,
 }

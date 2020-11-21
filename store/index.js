@@ -1,3 +1,5 @@
+import { MyDatabase } from '~/assets/ts/myDatabase'
+
 export const state = () => {
     currentUserInfo: null
     followCount: 0
@@ -7,6 +9,7 @@ export const state = () => {
     friendList: []
     imgPreview: null
     showPreviewImg: false
+    db: null
 }
 
 export const mutations = {
@@ -69,5 +72,8 @@ export const mutations = {
         state.friendList = state.followList.filter(follow => {
             return state.followerList.indexOf(follow) !== -1
         })
+    },
+    newDB(state) {
+        state.db = new MyDatabase()
     }
 }

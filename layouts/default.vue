@@ -124,6 +124,7 @@ import { AmplifyEventBus } from 'aws-amplify-vue'
 import * as Common from '~/assets/js/common.js'
 import WebRTC from '~/assets/js/webrtc.js'
 import UserCardRow from '~/components/userCardRow.vue'
+import { MyDatabase } from '~/assets/ts/myDatabase'
 
 export default {
     components: {
@@ -180,9 +181,12 @@ export default {
             },
             containerStyle: {},
             subscription: null,
+            connected: [],
+            unconnected: [],
             connections: [],
             connectedCount: 0,
-            dialogConnectList: false
+            dialogConnectList: false,
+            db: {}
         }
     },
     async beforeCreate() {
@@ -199,8 +203,15 @@ export default {
     async created () {
         this.containerStyle = JSON.parse(JSON.stringify(this.defaultContainerStyle))
         this.setListener()
+        if(this.$store.state.db == null) this.$store.commit("newDB")
+        this.db = this.$store.state.db
         this.getUserInfo()
-            .then(() => this.subscribe())
+            .then(() => {
+                this.subscribe()
+            })
+    },
+    mounted () {
+        this.initDB()
     },
     computed: {
         filteredItems () {
@@ -212,16 +223,55 @@ export default {
                     return item.status.indexOf('loggedOut') !== -1
                 }
             })
-        },
-        connected () {
-            return this.connections.filter((connection) => {
-                return connection.connection.getStatus
-            })
-        },
-        unconnected () {
-            return this.connections.filter((connection) => {
-                return !(connection.connection.getStatus)
-            })
+        }
+    },
+    watch: {
+        connections: {
+            handler: async function(newObj, oldObj) {
+                let untilDate = Common.getNow() - 60 * 60 *24
+                await this.db.posts.orderBy("updatedAt")
+                                    .desc()
+                                    .offset(0)
+                                    .limit(1)
+                                    .toArray(posts => {
+                                        if (posts.length > 0) {
+                                            untilDate = posts[0].updatedAt
+                                        }
+                                    })
+                
+                newObj.map((obj) => {
+                    if (obj.connection.getStatus) {
+                        const requestFlag = this.unconnected.some(peer => peer.id === obj.id)
+                        this.connected = this.connected.filter((peer) => {
+                            return peer.id !== obj.id
+                        })
+                        this.unconnected = this.unconnected.filter((peer) => {
+                            return peer.id !== obj.id
+                        })
+                        this.connected.push(obj)
+                        if (requestFlag) {
+                            const message = {
+                                type: "request",
+                                data: {
+                                    id: 'req-' + Common.getNow(),
+                                    fromUserId: this.currentUserInfo.attributes.sub,
+                                    untilDate: untilDate
+                                }
+                            }
+                            obj.connection.sendMessage(JSON.stringify(message))
+                        }
+                    } else {
+                        this.connected = this.connected.filter((peer) => {
+                            return peer.id !== obj.id
+                        })
+                        this.unconnected = this.unconnected.filter((peer) => {
+                            return peer.id !== obj.id
+                        })
+                        this.unconnected.push(obj)
+                    }
+                })
+            },
+            deep: true
         }
     },
     methods: {
@@ -259,14 +309,17 @@ export default {
             if (this.isLoggedIn) {
                 this.getProfile()
                 this.updateLastLogin(this.currentUserInfo)
-                const followList = await Common.getFollowList(this.currentUserInfo.attributes.sub, 'follow')
-                this.$store.commit("setFollowList", followList)
-                const followerList = await Common.getFollowerList(this.currentUserInfo.attributes.sub, 'follow')
-                this.$store.commit("setFollowerList", followerList)
-                this.$store.commit("setFriendList")
-                this.initPeers()
+                this.setFriendList()
+                    .then(() => this.initPeers())
                     .then(() => this.offerFriend())
             }
+        },
+        async setFriendList () {
+            const followList = await Common.getFollowList(this.currentUserInfo.attributes.sub, 'follow')
+            this.$store.commit("setFollowList", followList)
+            const followerList = await Common.getFollowerList(this.currentUserInfo.attributes.sub, 'follow')
+            this.$store.commit("setFollowerList", followerList)
+            this.$store.commit("setFriendList")
         },
         logout () {
             this.$store.commit('logout')
@@ -307,8 +360,7 @@ export default {
             this.img.imgURL = null
         },
         updateLastLogin (currentUserInfo) {
-            const date = new Date()
-            const nowUnix = Math.floor(date.getTime() / 1000)
+            const nowUnix = Common.getNow()
             const updateProfile = `
                 mutation UpdateProfile {
                     updateProfile(input: {
@@ -330,8 +382,7 @@ export default {
             }
         },
         createProfile (currentUserInfo) {
-            const date = new Date()
-            const nowUnix = Math.floor(date.getTime() / 1000)
+            const nowUnix = Common.getNow()
             const createProfile = `
                 mutation CreateProfile {
                     createProfile(input: {
@@ -391,16 +442,20 @@ export default {
             if (!this.currentUserInfo) {
                 this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
             }
+            if(this.$store.state.db == null) this.$store.commit("newDB")
+            this.db = this.$store.state.db
             const friendIds = this.$store.state.friendList
             friendIds.forEach(async (friendId) => {
                 const peer = {
                     fromUserId: this.currentUserInfo.attributes.sub,
                     toUserId: friendId
                 }
-                this.connections.push({
+                const connection = {
                     toUserId: friendId,
-                    connection: new WebRTC(peer)
-                })
+                    connection: new WebRTC(peer, this.$store.state.db)
+                }
+                this.connections.push(connection)
+                this.unconnected.push(connection)
             })
         },
         offerFriend () {
@@ -432,6 +487,49 @@ export default {
             this.unconnected.map((peer) => {
                 this.$refs['connection-' + peer.toUserId][0].getProfile()
             })
+        },
+        initDB () {
+            this.db.open()
+            const self = this
+            this.db.myPosts.hook("creating", function(primKey, obj, trans) {
+                trans.on("complete", function() {
+                    const jsonObj = {
+                        type: "post",
+                        data: obj
+                    }
+                    if (self.connected.length > 0) {
+                        self.connected.map((peer) => {
+                            peer.connection.sendMessage(JSON.stringify(jsonObj))
+                        })
+                    }
+                })
+            })
+            this.db.requests.hook("creating", (primKey, obj, trans) => {
+                const targetPeer = self.connections.find((peer) => {
+                    return peer.toUserId == obj.fromUserId
+                })
+                trans.on("complete", function () {
+                    trans.db.myPosts.where("updatedAt")
+                                    .above(obj.untilDate)
+                                    .reverse()
+                                    .sortBy("updatedAt")
+                                    .then((myPosts) => {
+                                        if (myPosts.length > 0) {
+                                            myPosts.map(post => {
+                                                const jsonObj = {
+                                                    type:"post",
+                                                    data: post
+                                                }
+                                                targetPeer.connection.sendMessage(JSON.stringify(jsonObj))
+                                            })
+                                        }
+                                    })
+                    trans.db.requests.delete(primKey)
+                })
+            })
+        },
+        closeDB () {
+            this.db.close()
         }
     }
 }

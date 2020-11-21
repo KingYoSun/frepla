@@ -187,7 +187,22 @@ export default {
         }
     },
     async mounted () {
-        this.db = new MyDatabase()
+        if(this.$store.state.db == null) this.$store.commit("newDB")
+        this.db = this.$store.state.db
+        this.db.open()
+        const self = this
+        this.db.posts.hook("updating",function(mods, primKey, obj, trans) {
+            trans.on("complete", function() {
+                self.setPost(self.offset)
+            })
+        })
+        this.db.posts.hook("creating",function(primKey, obj, trans) {
+            console.log(self)
+            trans.on("complete", function() {
+                self.setPost(self.offset)
+            })
+        })
+        
         this.getCurrentUserInfo()
          .then(async () => this.getProfile())
          .then(async () => {
@@ -219,11 +234,6 @@ export default {
         removeImg () {
             this.$store.commit("removeImg")
         },
-        getNow () {
-            const date = new Date()
-            const unixtimenow = Math.floor(date.getTime() / 1000)
-            return unixtimenow
-        },
         validation () {
             try {
                 if(!this.$refs.formMessage.validate()) {
@@ -240,7 +250,7 @@ export default {
                                         .first()
         },
         setPost (offset) {
-            this.db.posts.orderBy("createdAt")
+            this.db.posts.orderBy("updatedAt")
                         .desc()
                         .offset(offset)
                         .limit(20)
@@ -258,26 +268,26 @@ export default {
                         })
         },
         setMyPost (offset) {
-            this.db.posts.where("userId")
-                        .equals(this.currentUserInfo.attributes.sub)
-                        .reverse()
-                        .sortBy("createdAt")
-                        .then(async (posts) => {
-                            posts = await Promise.all(posts.map(async (post) => {
-                                if (post.replyToId != null && post.replyToId != undefined && post.replyToId != '') {
-                                    post.replyToPost = await this.getPost(post.replyToId)
-                                }
-                                if (post.replyFromId != null && post.replyFromId != undefined && post.replyFromId.length > 0) {
-                                    post.replyFromPost = await this.getPost(post.replyFromId.slice(-1)[0])
-                                }
-                                return post
-                            }))
-                            this.myPosts = posts
-                        })
+            this.db.myPosts.orderBy("updatedAt")
+                            .desc()
+                            .offset(offset)
+                            .limit(20)
+                            .toArray(async (posts) => {
+                                posts = await Promise.all(posts.map(async (post) => {
+                                    if (post.replyToId != null && post.replyToId != undefined && post.replyToId != '') {
+                                        post.replyToPost = await this.getPost(post.replyToId)
+                                    }
+                                    if (post.replyFromId != null && post.replyFromId != undefined && post.replyFromId.length > 0) {
+                                        post.replyFromPost = await this.getPost(post.replyFromId.slice(-1)[0])
+                                    }
+                                    return post
+                                }))
+                                this.myPosts = posts
+                            })
         },
         async putMyPosts () {
             this.db.transaction("rw", this.db.posts, this.db.myPosts, () => {
-                const id =this.myProfile.name + '-' + String(this.getNow())
+                const id =this.myProfile.name + '-' + String(Common.getNow())
                 const post = {
                     id: id,
                     name: this.myProfile.name,
@@ -285,8 +295,8 @@ export default {
                     userId: this.currentUserInfo.attributes.sub,
                     text: this.messageInputBox.replace(/\n/g,'\\n'),
                     files: [],
-                    createdAt: this.getNow(),
-                    updatedAt: this.getNow(),
+                    createdAt: Common.getNow(),
+                    updatedAt: Common.getNow(),
                     toUsers: this.toUsers,
                     replyToId: this.replyToId,
                     like: [],
@@ -301,7 +311,7 @@ export default {
                     const replyFromId = (Array.isArray(this.replyToPost.replyFromId) && this.replyToPost.replyFromId.length > 0)?  this.replyToPost.replyFromId : [id]
                     this.db.posts.update(this.replyToId, {
                         replyFromId: replyFromId,
-                        updatedAt: this.getNow()
+                        updatedAt: Common.getNow()
                     })
                 }
             }).then(() => {
@@ -330,14 +340,14 @@ export default {
                     })
                     this.db.posts.update(targetPost.replyToId, {
                         replyFromId: replyFromId,
-                        updatedAt: this.getNow()
+                        updatedAt: Common.getNow()
                     })
                 }
                 if (targetPost.replyFromId != undefined && targetPost.replyFromId != null && targetPost.replyFromId.length > 0) {
                     targetPost.replyFromId.map((post) => {
                         this.db.posts.update(post.id, {
                             replyToId: null,
-                            updatedAt: this.getNow()
+                            updatedAt: Common.getNow()
                         })
                     })
                 }
@@ -359,12 +369,12 @@ export default {
                     targetPost.rePost.push(this.currentUserInfo.attributes.sub)
                     this.db.posts.update(targetPost.id, {
                         rePost: targetPost.rePost,
-                        updatedAt: this.getNow()
+                        updatedAt: Common.getNow()
                     })
                     if (targetPost.userId == this.currentUserInfo.attributes.sub) {
                         this.db.myPosts.update(targetPost.id, {
                             rePost: targetPost.rePost,
-                            updatedAt: this.getNow()
+                            updatedAt: Common.getNow()
                         })
                     } else {
                         this.db.myPosts.put(targetPost)
@@ -386,12 +396,12 @@ export default {
                     })
                     this.db.posts.update(targetPost.id, {
                         rePost: rePostFiltered,
-                        updatedAt: this.getNow()
+                        updatedAt: Common.getNow()
                     })
                     if (targetPost.userId == this.currentUserInfo.attributes.sub) {
                         this.db.myPosts.update(targetPost.id, {
                             rePost: rePostFiltered,
-                            updatedAt: this.getNow()
+                            updatedAt: Common.getNow()
                         })
                     } else {
                         this.db.myPosts.delete(targetPost.id)
@@ -411,12 +421,12 @@ export default {
                     targetPost.like.push(this.currentUserInfo.attributes.sub)
                     this.db.posts.update(targetPost.id, {
                         like: targetPost.like,
-                        updatedAt: this.getNow()
+                        updatedAt: Common.getNow()
                     })
                     if (targetPost.userId == this.currentUserInfo.attributes.sub) {
                         this.db.myPosts.update(targetPost.id, {
                             like: targetPost.like,
-                            updatedAt: this.getNow()
+                            updatedAt: Common.getNow()
                         })
                     }
                 }
@@ -436,12 +446,12 @@ export default {
                     })
                     this.db.posts.update(targetPost.id, {
                         like: likeFiltered,
-                        updatedAt: this.getNow()
+                        updatedAt: Common.getNow()
                     })
                     if (targetPost.userId == this.currentUserInfo.attributes.sub) {
                         this.db.myPosts.update(targetPost.id, {
                             like: likeFiltered,
-                            updatedAt: this.getNow()
+                            updatedAt: Common.getNow()
                         })
                     }
                 }

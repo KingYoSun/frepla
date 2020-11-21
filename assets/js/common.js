@@ -134,3 +134,9 @@ export async function setImgFileUser (obj, identityId) {
         }
     }
 }
+
+export function getNow () {
+    const date = new Date()
+    const unixtimenow = Math.floor(date.getTime() / 1000)
+    return unixtimenow
+}
