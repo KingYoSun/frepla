@@ -60,6 +60,7 @@
             <v-icon>mdi-book</v-icon>
         </v-btn>
         -->
+        <!--
         <v-btn
         color="gray"
         icon
@@ -68,6 +69,7 @@
         >
             <v-icon>mdi-trash-can-outline</v-icon>
         </v-btn>
+        -->
     </v-row>
 </template>
 
@@ -97,10 +99,10 @@ export default {
     },
     computed: {
         rePostInclude () {
-            return this.post.rePost.includes(this.$store.state.currentUserInfo.attributes.sub)? true : false
+            return (Array.isArray(this.post.rePost) && this.post.rePost.includes(this.$store.state.currentUserInfo.attributes.sub))? true : false
         },
         likeInclude () {
-            return this.post.like.includes(this.$store.state.currentUserInfo.attributes.sub)? true : false
+            return (Array.isArray(this.post.like) && this.post.like.includes(this.$store.state.currentUserInfo.attributes.sub))? true : false
         }
     },
     methods: {
@@ -112,14 +114,14 @@ export default {
         },
         rePost () {
             if (this.rePostInclude) {
-                this.$emit("removeRePost", this.post)
+                //this.$emit("removeRePost", this.post)
             } else {
                 this.$emit("rePost", this.post)
             }
         },
         addLike () {
             if (this.likeInclude) {
-                this.$emit("removeLike", this.post)
+                //this.$emit("removeLike", this.post)
             } else {
                 this.$emit("addLike", this.post)
             }

@@ -85,7 +85,7 @@
             >
                 <v-card>
                     <v-card-title class="justify-center">接続情報</v-card-title>
-                    <v-list-item v-for="(peer, index) in connected" :key="index">
+                    <v-list-item v-for="(peer, index) in $store.state.connected" :key="index">
                         <user-card-row
                         :peer="peer"
                         @connect="connectFriend"
@@ -93,7 +93,7 @@
                         :ref="'connection-' + peer.toUserId"
                         />
                     </v-list-item>
-                    <v-list-item v-for="(peer, index) in unconnected" :key="index">
+                    <v-list-item v-for="(peer, index) in $store.state.unconnected" :key="index">
                         <user-card-row
                         :peer="peer"
                         @connect="connectFriend"
@@ -181,10 +181,7 @@ export default {
             },
             containerStyle: {},
             subscription: null,
-            connected: [],
-            unconnected: [],
             connections: [],
-            connectedCount: 0,
             dialogConnectList: false,
             db: {}
         }
@@ -241,14 +238,9 @@ export default {
                 
                 newObj.map((obj) => {
                     if (obj.connection.getStatus) {
-                        const requestFlag = this.unconnected.some(peer => peer.id === obj.id)
-                        this.connected = this.connected.filter((peer) => {
-                            return peer.id !== obj.id
-                        })
-                        this.unconnected = this.unconnected.filter((peer) => {
-                            return peer.id !== obj.id
-                        })
-                        this.connected.push(obj)
+                        const requestFlag = this.$store.state.unconnected.some(peer => peer.id === obj.id)
+                        this.$store.commit("resetConnectionById", obj.id)
+                        this.$store.commit("pushConnected", obj)
                         if (requestFlag) {
                             const message = {
                                 type: "request",
@@ -261,13 +253,8 @@ export default {
                             obj.connection.sendMessage(JSON.stringify(message))
                         }
                     } else {
-                        this.connected = this.connected.filter((peer) => {
-                            return peer.id !== obj.id
-                        })
-                        this.unconnected = this.unconnected.filter((peer) => {
-                            return peer.id !== obj.id
-                        })
-                        this.unconnected.push(obj)
+                        this.$store.commit("resetConnectionById", obj.id)
+                        this.$store.commit("pushUnconnected", obj)
                     }
                 })
             },
@@ -452,15 +439,17 @@ export default {
                 }
                 const connection = {
                     toUserId: friendId,
-                    connection: new WebRTC(peer, this.$store.state.db)
+                    connection: new WebRTC(peer, this.$store.state.db, this.currentUserInfo)
                 }
                 this.connections.push(connection)
-                this.unconnected.push(connection)
+                this.$store.commit("pushUnconnected", connection)
             })
         },
         offerFriend () {
             this.connections.map((peer) => {
-                if (this.connected != undefined && this.connected.length > 0 && this.connected.some((obj) => obj.toUserId !== peer.toUserId)) {
+                if (this.$store.state.connected != undefined
+                    && this.$store.state.connected.length > 0
+                    && this.$store.state.connected.some((obj) => obj.toUserId !== peer.toUserId)) {
                     return false
                 }
                 peer.connection.connectPeers()
@@ -481,42 +470,32 @@ export default {
         },
         openConnectList () {
             this.dialogConnectList = !this.dialogConnectList
-            this.connected.map((peer) => {
+            /*
+            this.$store.state.connected.map((peer) => {
+                console.log("peer!")
+                console.log(this.$refs)
+                console.log(this.$refs['connection-' + peer.toUserId])
                 this.$refs['connection-' + peer.toUserId][0].getProfile()
             })
-            this.unconnected.map((peer) => {
+            this.$store.state.unconnected.map((peer) => {
+                console.log("peer!")
+                console.log(this.$refs)
+                console.log(this.$refs['connection-' + peer.toUserId])
                 this.$refs['connection-' + peer.toUserId][0].getProfile()
             })
+            */
         },
         initDB () {
             this.db.open()
             const self = this
-            /*
-            this.db.posts.hook("updating", function(mods, primKey, obj, trans) {
-                trans.on("complete", function () {
-                    mods.keys.map((key) => {
-                        obj[key] = mods[key]
-                    })
-                    const jsonObj = {
-                        type: "post",
-                        data: obj
-                    }
-                    if (self.connected.length > 0) {
-                        self.connected.map((peer) => {
-                            peer.connection.sendMessage(JSON.stringify(jsonObj))
-                        })
-                    }
-                })
-            })
-            */
             this.db.myPosts.hook("creating", function(primKey, obj, trans) {
                 trans.on("complete", function() {
                     const jsonObj = {
                         type: "post",
                         data: obj
                     }
-                    if (self.connected.length > 0) {
-                        self.connected.map((peer) => {
+                    if (self.$store.state.connected.length > 0) {
+                        self.$store.state.connected.map((peer) => {
                             peer.connection.sendMessage(JSON.stringify(jsonObj))
                         })
                     }

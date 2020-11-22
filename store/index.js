@@ -10,6 +10,9 @@ export const state = () => {
     imgPreview: null
     showPreviewImg: false
     db: null
+    connection: []
+    connected: []
+    unconnected: []
 }
 
 export const mutations = {
@@ -75,5 +78,34 @@ export const mutations = {
     },
     newDB(state) {
         state.db = new MyDatabase()
+    },
+    setConnections(state, array) {
+        state.connections = array
+    },
+    pushConnected(state, peer) {
+        if (state.connected == undefined) {
+            state.connected = []
+        }
+        state.connected.push(peer)
+    },
+    pushUnconnected(state, peer) {
+        if (state.unconnected == undefined) {
+            state.unconnected = []
+        }
+        state.unconnected.push(peer)
+    },
+    resetConnectionById(state, id) {
+        if (state.connected == undefined) {
+            state.connected = []
+        }
+        if (state.unconnected == undefined) {
+            state.unconnected = []
+        }
+        state.connected = state.connected.filter((peer) => {
+            return peer.id !== id
+        })
+        state.unconnected = state.unconnected.filter((peer) => {
+            return peer.id !== id
+        })
     }
 }

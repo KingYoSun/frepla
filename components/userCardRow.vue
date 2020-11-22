@@ -73,22 +73,29 @@ export default {
             }
         }
     },
+    mounted () {
+        this.getProfile()
+        this.switchButton(this.peer)
+    },
     watch: {
         peer: {
             handler: function (newPeer, oldPeer) {
                 //console.log('watch!')
-                if (newPeer.connection.connected) {
-                    this.connectButtonDisable = true
-                    this.disconnectButtonDisable = false
-                } else {
-                    this.connectButtonDisable = false
-                    this.disconnectButtonDisable = true
-                }
+                this.switchButton(newPeer)
             },
             deep: true
         }
     },
     methods: {
+        switchButton (peer) {
+            if (peer.connection.connected) {
+                this.connectButtonDisable = true
+                this.disconnectButtonDisable = false
+            } else {
+                this.connectButtonDisable = false
+                this.disconnectButtonDisable = true
+            }
+        },
         connect () {
             this.connectButtonDisable = false
             this.disconnectButtonDisable = false

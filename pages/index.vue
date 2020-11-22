@@ -151,6 +151,7 @@ import VuetifyLogo from '~/components/VuetifyLogo.vue'
 import * as Common from '~/assets/js/common.js'
 import { MyDatabase } from '~/assets/ts/myDatabase.ts'
 import Post from '~/components/post.vue'
+import { updateFriend } from '~/src/graphql/mutations'
 
 export default {
     components: {
@@ -193,11 +194,42 @@ export default {
         const self = this
         this.db.posts.hook("updating",function(mods, primKey, obj, trans) {
             trans.on("complete", function() {
+                const mods_keys = Object.keys(mods)
+                const moddable = ["replyFromId", "like", "rePost"]
+                // moddableキーが存在しない場合に初期化
+                moddable.map((mod_key) => {
+                    obj[mod_key] = (obj[mod_key] == null || obj[mod_key] == undefined || obj[mod_key] === "")? [] : obj[mod_key]
+                })
+                // updatedAtの比較
+                let updateFlag = false
+                if ("updatedAt" in mods) {
+                    updateFlag = (mods.updatedAt > obj.updatedAt)? true : false
+                }
+                if (mods_keys.length > 0 && updateFlag) {
+                    mods_keys.map((key) => {
+                        const mod_key = moddable.find(elem => key.includes(elem))
+                        if (!moddable.includes(key)) {
+                            if (mod_key != undefined) {
+                                obj[mod_key].push(mods[key])
+                            } else {
+                                obj[key] = mods[key]
+                            }
+                        }
+                    })
+                    const jsonObj = {
+                        type: "post",
+                        data: obj
+                    }
+                    if (self.$store.state.connected.length > 0) {
+                        self.$store.state.connected.map((peer) => {
+                            peer.connection.sendMessage(JSON.stringify(jsonObj))
+                        })
+                    }
+                }
                 self.setPost(self.offset)
             })
         })
         this.db.posts.hook("creating",function(primKey, obj, trans) {
-            console.log(self)
             trans.on("complete", function() {
                 self.setPost(self.offset)
             })

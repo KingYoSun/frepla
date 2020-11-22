@@ -1,8 +1,7 @@
 import API, { graphqlOperation } from '@aws-amplify/api' 
-import { store } from '~/store/'
 
 export default class WebRTC{
-    constructor(peer, db) {
+    constructor(peer, db, currentUserInfo) {
         this.fromUserId = peer.fromUserId
         this.toUserId = peer.toUserId
         this.localConnection = null
@@ -13,6 +12,7 @@ export default class WebRTC{
             iceTransportPolicy: "all"    
         }
         this.db = db
+        this.currentUserInfo = currentUserInfo
     }
 
     get getConnection() {
@@ -188,7 +188,7 @@ export default class WebRTC{
     
     handleDataChannelStatusChange () {
         //console.log("statusChange")
-        if (this.dataChannel) {
+        if (this.dataChannel != null && this.dataChannel != undefined) {
             let state = this.dataChannel.readyState;
             //console.log('state is: ' + state)
             if (state === "open") {
@@ -216,15 +216,36 @@ export default class WebRTC{
                 if (targetPost == null || targetPost == undefined) {
                     this.db.posts.add(data.data)
                 } else {
+                    let replyFromId = []
+                    const isReplyFromIdTargetPost = ("replyFromId" in targetPost && targetPost.replyFromId != null && targetPost.replyFromId != undefined)? true : false
+                    const isReplyFromIdData = ("replyFromId" in data.data && data.data.fromUserId != null && data.data.fromUserId != undefined)? true : false
+                    if (isReplyFromIdData) {
+                        if (isReplyFromIdTargetPost) {
+                            replyFromId = targetPost.replyFromId.concat(data.data.replyFromId)
+                        } else {
+                            replyFromId = data.data.replyFromId
+                        }
+                    } else if (isReplyFromIdTargetPost) {
+                        replyFromId = targetPost.replyFromId
+                    }
+                    replyFromId = Array.from(new Set(replyFromId))
                     let like = targetPost.like.concat(data.data.like)
-                    like = [...new Set(like)]
+                    like = Array.from(new Set(like))
                     let rePost = targetPost.rePost.concat(data.data.rePost)
-                    rePost = [...new Set(rePost)]
-                    this.db.posts.update(data.data.id, {
+                    rePost = Array.from(new Set(rePost))
+                    like = like.filter((elem) => elem != null && elem != undefined)
+                    rePost = rePost.filter((elem) => elem != null && elem != undefined)
+                    replyFromId = replyFromId.filter((elem) => elem != null && elem != undefined)
+                    const updatePost = {
+                        replyFromId: replyFromId,
                         like: like,
                         rePost: rePost,
                         updatedAt: data.data.updatedAt
-                    })
+                    }
+                    this.db.posts.update(data.data.id, updatePost)
+                    if (data.data.id === this.currentUserInfo.attributes.sub) {
+                        this.db.myPosts.update(data.data.id, updatePost)
+                    }
                 }
             }
         }).then(() => {
