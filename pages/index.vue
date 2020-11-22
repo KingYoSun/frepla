@@ -56,10 +56,24 @@
         </v-row>
         <div v-if="selectedTimeline === 'posts'" class="mt-4">
             <div v-for="post in posts" :key="post.id">
-                <div v-if="post.replyToId != null && post.replyToId != undefined && post.replyToId != ''" style="position: relative;">
+                <div v-if="post != null">
+                    <div v-if="post.replyToId != null && post.replyToId != undefined && post.replyToId != ''" style="position: relative;">
+                        <post
+                        :ref="'post-' + post.replyToPost.id"
+                        :post="post.replyToPost"
+                        :showButtons="true"
+                        @reply="setReply"
+                        @delete="deletePost"
+                        @rePost="rePost"
+                        @removeRePost="removeRePost"
+                        @addLike="addLike"
+                        @removeLike="removeLike"
+                        />
+                        <v-icon color="grey darken-2" style="position: absolute; bottom: 0px; left: 10px;">mdi-dots-vertical</v-icon>
+                    </div>
                     <post
-                    :ref="'post-' + post.replyToPost.id"
-                    :post="post.replyToPost"
+                    :ref="'post-' + post.id"
+                    :post="post"
                     :showButtons="true"
                     @reply="setReply"
                     @delete="deletePost"
@@ -68,32 +82,20 @@
                     @addLike="addLike"
                     @removeLike="removeLike"
                     />
-                    <v-icon color="grey darken-2" style="position: absolute; bottom: 0px; left: 10px;">mdi-dots-vertical</v-icon>
-                </div>
-                <post
-                :ref="'post-' + post.id"
-                :post="post"
-                :showButtons="true"
-                @reply="setReply"
-                @delete="deletePost"
-                @rePost="rePost"
-                @removeRePost="removeRePost"
-                @addLike="addLike"
-                @removeLike="removeLike"
-                />
-                <div v-if="post.replyFromId != null && post.replyFromId != undefined && post.replyFromId.length > 0" style="position: relative;">
-                    <v-icon color="grey darken-2" style="position: absolute; top: -30px; left: 10px;">mdi-dots-vertical</v-icon>
-                    <post
-                    :ref="'post-' + post.replyFromPost.id"
-                    :post="post.replyFromPost"
-                    :showButtons="true"
-                    @reply="setReply"
-                    @delete="deletePost"
-                    @rePost="rePost"
-                    @removeRePost="removeRePost"
-                    @addLike="addLike"
-                    @removeLike="removeLike"
-                    />
+                    <div v-if="post.replyFromId != null && post.replyFromId != undefined && post.replyFromId.length > 0" style="position: relative;">
+                        <v-icon color="grey darken-2" style="position: absolute; top: -30px; left: 10px;">mdi-dots-vertical</v-icon>
+                        <post
+                        :ref="'post-' + post.replyFromPost.id"
+                        :post="post.replyFromPost"
+                        :showButtons="true"
+                        @reply="setReply"
+                        @delete="deletePost"
+                        @rePost="rePost"
+                        @removeRePost="removeRePost"
+                        @addLike="addLike"
+                        @removeLike="removeLike"
+                        />
+                    </div>
                 </div>
                 <v-divider />
             </div>
@@ -296,6 +298,10 @@ export default {
                                 }
                                 return post
                             }))
+                            posts = posts.filter(post => {
+                                const includeReplyToId = posts.some((obj) => obj.replyToId === post.id)
+                                return !includeReplyToId
+                            })
                             this.posts = posts
                         })
         },
@@ -314,6 +320,10 @@ export default {
                                     }
                                     return post
                                 }))
+                                posts = posts.filter(post => {
+                                    const includeReplyToId = posts.some((obj) => obj.replyToId === post.id)
+                                    return !includeReplyToId
+                                })
                                 this.myPosts = posts
                             })
         },
