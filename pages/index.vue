@@ -10,47 +10,14 @@
                     ホーム
                 </v-card-title>
                 <v-card-text>
-                    <v-form ref="formMessage" @submit.prevent>
-                        <v-row justify="center">
-                            <v-avatar
-                            color="indigo"
-                            size="60"
-                            class="ml-2"
-                            >
-                                <v-icon dark v-if="!myProfile.showPreviewImg">mdi-account-circle</v-icon>
-                                <v-img
-                                :src="myProfile.imgPreview"
-                                v-if="myProfile.showPreviewImg"
-                                alt="ユーザアイコン"
-                                @error="removeImg"
-                                class="profileIcon"
-                                :max-width="60"
-                                />
-                            </v-avatar>
-                            <v-textarea
-                            outlined
-                            rows="4"
-                            v-model="messageInputBox"
-                            ref="messageBox"
-                            class="mx-2"
-                            label="いまなにしてる？"
-                            :rules="[required]"
-                            :disabled="messageInputBoxDisable"
-                            >
-                            </v-textarea>
-                        </v-row>
-                        <v-row justify="end">
-                            <v-btn
-                            color="primary"
-                            dark
-                            class="mr-4"
-                            :disabled="sendButtonDisable"
-                            @click="validation"
-                            >
-                            POST
-                            </v-btn>
-                        </v-row>
-                    </v-form>
+                    <form-post
+                    label="いまなにしてる？"
+                    :profile="myProfile"
+                    :messageInputBox.sync="messageInputBox"
+                    :messageInputBoxDisable="messageInputBoxDisable"
+                    :sendButtonDisable="sendButtonDisable"
+                    @put="putMyPosts"
+                    />
                 </v-card-text>
             </v-card>
         </v-row>
@@ -123,28 +90,15 @@
                     <h4>@{{ replyToPost.name }} さんに返信</h4>
                 </v-list-item>
                 <v-list-item>
-                    <v-textarea
-                    outlined
-                    rows="4"
-                    v-model="messageInputBox"
-                    ref="messageBox"
-                    class="mx-2"
-                    label="おへんじ"
-                    :rules="[required]"
-                    :disabled="messageInputBoxDisable"
-                    >
-                    </v-textarea>
+                    <form-post
+                    label="おへんじ..."
+                    :profile="myProfile"
+                    :messageInputBox.sync="messageInputBox"
+                    :messageInputBoxDisable="messageInputBoxDisable"
+                    :sendButtonDisable="sendButtonDisable"
+                    @put="putMyPosts"
+                    />
                 </v-list-item>
-                <v-list-item-action class="mt-0">
-                    <v-btn
-                    color="primary"
-                    dark
-                    :disabled="sendButtonDisable"
-                    @click="validation"
-                    >
-                    POST
-                    </v-btn>
-                </v-list-item-action>
             </v-card>
         </v-dialog>
     </v-container>
@@ -159,16 +113,21 @@ import * as Common from '~/assets/js/common.js'
 import { MyDatabase } from '~/assets/ts/myDatabase.ts'
 import Post from '~/components/post.vue'
 import { updateFriend } from '~/src/graphql/mutations'
+import FormPost from '~/components/form/formPost.vue'
 
 export default {
     components: {
         Logo,
         VuetifyLogo,
-        Post
+        Post,
+        FormPost
     },
     data () {
         return {
             currentUserInfo: {},
+            messageInputBox: "",
+            messageInputBoxDisable: false,
+            sendButtonDisable: false,
             myProfile: {
                 id: "",
                 name: "",
@@ -177,12 +136,7 @@ export default {
                 showPreviewImg: false,
                 imgPreview: null
             },
-            messages: [],
             friendList: [],
-            required: value => !!value || "必須事項です",
-            messageInputBox: "",
-            messageInputBoxDisable: false,
-            sendButtonDisable: false,
             db: null,
             myPosts: [],
             posts: [],
@@ -262,25 +216,22 @@ export default {
             return TwitterText.extractMentions(this.messageInputBox)
         }
     },
+    watch: {
+        dialogReply: {
+            handler: function(updated, old) {
+                if (!updated) {
+                    this.messageInputBox = ""
+                    this.replyToId = ""
+                }
+            }
+        }
+    },
     methods: {
         async getCurrentUserInfo () {
             this.currentUserInfo = this.$store.state.currentUserInfo
             if (!this.currentUserInfo) {
                 this.currentUserInfo = await this.$Amplify.Auth.currentUserInfo()
                 this.$store.commit('login', this.currentUserInfo)
-            }
-        },
-        removeImg () {
-            this.$store.commit("removeImg")
-        },
-        validation () {
-            try {
-                if(!this.$refs.formMessage.validate()) {
-                    throw "ExceptionOccured"
-                }
-                this.putMyPosts()
-            } catch (e) {
-                console.log(e)
             }
         },
         async getPost (id) {
@@ -375,6 +326,7 @@ export default {
             })
         },
         setReply (targetPost) {
+            this.messageInputBox = ""
             this.messageInputBox = "@" + targetPost.name + this.messageInputBox
             this.replyToId = targetPost.id
             this.replyToPost = targetPost

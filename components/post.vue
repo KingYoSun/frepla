@@ -28,7 +28,7 @@
                 </v-row>
                 <v-row v-if="showButtons" justify="start">
                     <post-buttons
-                    :post="this.post"
+                    :post="post"
                     @delete="deletePost"
                     @reply="setReply"
                     @rePost="rePost"
