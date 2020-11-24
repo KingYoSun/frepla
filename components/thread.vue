@@ -126,7 +126,6 @@ export default {
                                 })
                                 return resultParent
                             })
-                            console.log(this.childThreadList)
                         })
         },
         setReply (post) {

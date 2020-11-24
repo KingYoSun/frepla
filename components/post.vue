@@ -22,6 +22,8 @@
                 <v-row justify="start">
                     <h4>{{ post.viewName }}</h4>
                     <span style="color: gray;">@{{ post.name }}</span>
+                    <span class="ml-4 mr-2" style="color: gray;">- 最終更新:</span>
+                    <span style="color: gray">{{ unixToISO8601 }}</span>
                 </v-row>
                 <v-row justify="start" class="mt-1">
                     <span class="description" v-html="showTxt" />
@@ -97,6 +99,9 @@ export default {
     computed: {
         showTxt () {
             return this.autoLink(this.post.text)
+        },
+        unixToISO8601 () {
+            return new Date(this.post.updatedAt * 1000).toLocaleString()
         }
     },
     async mounted () {
