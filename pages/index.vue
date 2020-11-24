@@ -41,6 +41,7 @@
                             <v-btn
                             color="grey darken-2"
                             text
+                            @click="showThread(post)"
                             >
                                 <h4>スレッドを表示する</h4>
                             </v-btn>
@@ -63,6 +64,7 @@
                             <v-btn
                             color="grey darken-2"
                             text
+                            @click="showThread(post)"
                             >
                                 <h4>スレッドを表示する</h4>
                             </v-btn>
@@ -101,6 +103,21 @@
                 </v-list-item>
             </v-card>
         </v-dialog>
+        <v-dialog
+        v-model="dialogThread"
+        max-width="800px"
+        >
+            <thread
+            :flag="dialogThread"
+            :post="threadPost"
+            @reply="setReply"
+            @delete="deletePost"
+            @rePost="rePost"
+            @removeRePost="removeRePost"
+            @addLike="addLike"
+            @removeLike="removeLike"
+            />
+        </v-dialog>
     </v-container>
 </template>
 
@@ -114,13 +131,15 @@ import { MyDatabase } from '~/assets/ts/myDatabase.ts'
 import Post from '~/components/post.vue'
 import { updateFriend } from '~/src/graphql/mutations'
 import FormPost from '~/components/form/formPost.vue'
+import Thread from '~/components/thread.vue'
 
 export default {
     components: {
         Logo,
         VuetifyLogo,
         Post,
-        FormPost
+        FormPost,
+        Thread
     },
     data () {
         return {
@@ -143,8 +162,12 @@ export default {
             config: {},
             selectedTimeline: 'posts',
             replyToId: "",
+            threadId: "",
+            indent: 0,
             dialogReply: false,
+            dialogThread: false,
             replyToPost: {},
+            threadPost: {},
             offset: 0,
         }
     },
@@ -220,8 +243,14 @@ export default {
         dialogReply: {
             handler: function(updated, old) {
                 if (!updated) {
-                    this.messageInputBox = ""
-                    this.replyToId = ""
+                    this.resetPost()
+                }
+            }
+        },
+        dialogThread: {
+            handler: function(updated, old) {
+                if(!updated) {
+                    this.resetPost()
                 }
             }
         }
@@ -254,12 +283,6 @@ export default {
                                 }
                                 return post
                             }))
-                            /*
-                            posts = posts.filter(post => {
-                                const includeReplyToId = posts.some((obj) => obj.replyToId === post.id)
-                                return !includeReplyToId
-                            })
-                            */
                             this.posts = posts
                         })
         },
@@ -278,16 +301,13 @@ export default {
                                     }
                                     return post
                                 }))
-                                posts = posts.filter(post => {
-                                    const includeReplyToId = posts.some((obj) => obj.replyToId === post.id)
-                                    return !includeReplyToId
-                                })
                                 this.myPosts = posts
                             })
         },
         async putMyPosts () {
             this.db.transaction("rw", this.db.posts, this.db.myPosts, () => {
                 const id =this.myProfile.name + '-' + String(Common.getNow())
+                const threadId = (this.threadId !== "")? this.threadId : id
                 const post = {
                     id: id,
                     name: this.myProfile.name,
@@ -299,6 +319,8 @@ export default {
                     updatedAt: Common.getNow(),
                     toUsers: this.toUsers,
                     replyToId: this.replyToId,
+                    threadId: threadId,
+                    indent: this.indent,
                     like: [],
                     rePost: []
                 }
@@ -316,9 +338,9 @@ export default {
                 }
             }).then(() => {
                 console.log('Posted!')
-                this.messageInputBox = ""
                 this.dialogReply = false
-                this.replyToId = ""
+                this.dialogThread = false
+                this.resetPost()                
                 this.setPost(this.offset)
                 this.setMyPost(this.offset)
             }).catch((e) => {
@@ -329,8 +351,16 @@ export default {
             this.messageInputBox = ""
             this.messageInputBox = "@" + targetPost.name + this.messageInputBox
             this.replyToId = targetPost.id
+            this.threadId = targetPost.threadId
             this.replyToPost = targetPost
+            this.indent = targetPost.indent + 1
             this.dialogReply = true
+        },
+        resetPost () {
+            this.messageInputBox = ""
+            this.replyToId = ""
+            this.threadId = ""
+            this.indent = 0
         },
         deletePost (targetPost) {
             this.db.transaction("rw", this.db.posts, this.db.myPosts, async () => {
@@ -463,6 +493,10 @@ export default {
             }).catch((e) => {
                 console.log('Removing like is Failed: ' + e)
             })
+        },
+        showThread (post) {
+            this.threadPost = post
+            this.dialogThread = true
         },
         async getProfile () {
             await this.getCurrentUserInfo()

@@ -1,5 +1,5 @@
 <template>
-    <div class="my-2">
+    <div class="my-2" :style="'margin-left: ' + post.indent * 30 + 'px;'">
         <v-row>
             <div v-if="Array.isArray(post.rePost) && post.rePost.includes($store.state.currentUserInfo.attributes.sub)">
                 <v-icon color="grey darken-2">mdi-cached</v-icon><span class="font-weight-bold" style="color: #5a5a5a;">リポストしました</span>
@@ -85,8 +85,10 @@ export default {
                     replyToId: "",
                     replyToPost: {},
                     replyFromId: [],
+                    threadId: "",
+                    indent: 0,
                     like: [],
-                    rePost: []
+                    rePost: [],
                 }
             }
         },

@@ -1,6 +1,6 @@
 import Dexie from 'dexie'
 
-const SCHEMA_VERSION = 14
+const SCHEMA_VERSION = 16
 
 export class MyDatabase extends Dexie {
     public posts?: Dexie.Table<IPost, number>
@@ -12,8 +12,8 @@ export class MyDatabase extends Dexie {
         super('MyDatabase')
 
         this.version(SCHEMA_VERSION).stores({
-            posts: "++id, name, viewName, userId, text, files, createdAt, updatedAt, replyToId, replyFromId, toUsers, like, rePost",
-            myPosts: "++id, name, viewName, userId, text, files, createdAt, updatedAt, replyToId, replyFromId, toUsers, like, rePost",
+            posts: "++id, name, viewName, userId, text, files, createdAt, updatedAt, replyToId, replyFromId, threadId, indent, toUsers, like, rePost",
+            myPosts: "++id, name, viewName, userId, text, files, createdAt, updatedAt, replyToId, replyFromId, threadId, indent, toUsers, like, rePost",
             notices: "++id, category, text, createdAt",
             requests: "++id, fromUserId, untilDate"
         })
@@ -37,6 +37,8 @@ export interface IPost {
     updatedAt: number
     replyToId: string
     replyFromId: Array<string>
+    threadId: string
+    indent: number
     toUsers: Array<string>
     like: Array<string>
     rePost: Array<string>
