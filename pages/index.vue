@@ -185,26 +185,31 @@ export default {
                     obj[mod_key] = (obj[mod_key] == null || obj[mod_key] == undefined || obj[mod_key] === "")? [] : obj[mod_key]
                 })
                 // updatedAtの比較
-                let updateFlag = false
-                if ("updatedAt" in mods) {
-                    updateFlag = (mods.updatedAt > obj.updatedAt)? true : false
+                let updateFlag = {
+                    result: false,
+                    like: false,
+                    rePost: false,
+                    replyFromId: false
                 }
-                if (mods_keys.length > 0 && updateFlag) {
+                if (mods_keys.length > 0) {
                     mods_keys.map((key) => {
-                        const mod_key = moddable.find(elem => key.includes(elem))
                         if (!moddable.includes(key)) {
+                            const mod_key = moddable.find(elem => key.includes(elem))
+                            // modsのキーは[moddableのどれか].indexなので、mod_keyキーでobjを更新
                             if (mod_key != undefined) {
-                                obj[mod_key].push(mods[key])
+                                updateFlag[mod_key] = !obj[mod_key].includes(mods[key])
+                                if(updateFlag[mod_key]) obj[mod_key].push(mods[key])
                             } else {
                                 obj[key] = mods[key]
                             }
                         }
                     })
+                    updateFlag["result"] = (updateFlag["like"] || updateFlag["rePost"] || updateFlag["replyFromId"]) ? true : false
                     const jsonObj = {
                         type: "post",
                         data: obj
                     }
-                    if (self.$store.state.connected.length > 0) {
+                    if (self.$store.state.connected.length > 0 && updateFlag) {
                         self.$store.state.connected.map((peer) => {
                             peer.connection.sendMessage(JSON.stringify(jsonObj))
                         })
