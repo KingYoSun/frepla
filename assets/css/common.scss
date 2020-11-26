@@ -18,6 +18,14 @@
     border: 3px var(--text-color-main) solid;
 }
 
+.user-image-large {
+    max-width: 60px;
+    width: 20vw;
+    height: auto;
+    border-radius: 50%;
+    border: 3px var(--text-color-main) solid;
+}
+
 .description {
     white-space:pre-line;
     word-wrap: break-word;

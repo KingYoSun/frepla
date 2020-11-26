@@ -31,6 +31,7 @@
         class="mr-2"
         style="padding: 0px;"
         min-width="20"
+        @click="listRePost"
         >
             {{ (post.rePost != null && post.rePost != undefined) ? post.rePost.length : 0 }}
         </v-btn>
@@ -48,6 +49,7 @@
         class="mr-2"
         style="padding: 0px;"
         min-width="20"
+        @click="listLike"
         >
             {{ (post.like != null && post.like != undefined) ? post.like.length : 0 }}
         </v-btn>
@@ -125,7 +127,17 @@ export default {
             } else {
                 this.$emit("addLike", this.post)
             }
-        }
+        },
+        listLike () {
+            if (this.post.like != null && this.post.like != undefined && this.post.like.length > 0) {
+                this.$emit("listLike", this.post)
+            }
+        },
+        listRePost () {
+            if (this.post.rePost != null && this.post.rePost != undefined && this.post.rePost.length > 0) {
+                this.$emit("listRePost", this.post)
+            }
+        },
     }
 }
 </script>

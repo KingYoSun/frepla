@@ -1,54 +1,44 @@
 <template>
-    <v-list-item-content v-if="user.show">
-        <v-row justify="center" align="center">
-            <div v-if="icon.showPreviewImg" class="mx-1">
+    <div class="user-banner-container-small">
+        <v-row class="user-info-first-small">
+            <div>
                 <v-img
                 :src="icon.imgPreview"
                 alt="アイコンのプレビュー"
                 @error="resetImgURL(icon)"
-                class="user-image-small"
-                :max-width="45"
+                class="user-image-mid"
+                :max-width="60"
                 />
             </div>
-            <h4 class="ml-1">{{ user.viewName }}</h4>
-            <h4 class="mr-1">@{{ user.name }}</h4>
-            <v-btn
-            color="teal"
-            class="mx-1"
-            dark
-            :disabled="connectButtonDisable"
-            @click="connect"
-            >
-            CONNECT
-            </v-btn>
-            <v-btn
-            color="red"
-            class="mx-1"
-            dark
-            :disabled="disconnectButtonDisable"
-            @click="disconnect"
-            >
-            DISCONNECT
-            </v-btn>
+            <div class="user-link-small">
+                <div class="user-name-box-small">
+                    <span class="user-viewName">{{ user.viewName }}</span>
+                    <span class="user-name">@{{ user.name }}</span><br/>
+                    <span id="user-description-small" v-html="autoLink" />
+                </div>
+            </div>
         </v-row>
-    </v-list-item-content>
+    </div>
 </template>
 
 <script>
+import TwitterText from 'twitter-text'
 import API, { graphqlOperation } from '@aws-amplify/api'
 import * as Common from '~/assets/js/common.js'
-import { getProfile } from '~/src/graphql/queries'
 
 export default {
-    name: "UserCardRow",
+    name: 'UserCardSmall',
     data () {
         return {
+            styleGridSpan: '',
             user: {
-                show: false,
-                name: "",
-                viewName: "",
-                iconUrl: null,
-                identityId: null
+                id: "",
+                viewName: '',
+                name: '',
+                description: '',
+                iconUrl: '',
+                identityId: "",
+                status: ""
             },
             icon: {
                 name: "icon",
@@ -58,62 +48,32 @@ export default {
                 imgPreview: null,
                 showPreviewImg: false,
             },
-            connectButtonDisable: false,
-            disconnectButtonDisable: false
+            disableBtn: false
         }
     },
     props: {
-        peer: {
-            type: Object,
-            default () {
-                return {
-                    connection: null,
-                    toUserId: ""
-                }
-            }
+        userId: null,
+    },
+    computed: {
+        autoLink () {
+            return TwitterText.autoLink(String(this.user.description), {
+                targetBlank: true
+            })
         }
     },
     mounted () {
         this.getProfile()
-        this.switchButton(this.peer)
-    },
-    watch: {
-        peer: {
-            handler: function (newPeer, oldPeer) {
-                //console.log('watch!')
-                this.switchButton(newPeer)
-            },
-            deep: true
-        }
     },
     methods: {
-        switchButton (peer) {
-            if (peer.connection.connected) {
-                this.connectButtonDisable = true
-                this.disconnectButtonDisable = false
-            } else {
-                this.connectButtonDisable = false
-                this.disconnectButtonDisable = true
-            }
-        },
-        connect () {
-            this.connectButtonDisable = false
-            this.disconnectButtonDisable = false
-            this.$emit('connect', this.peer.toUserId)
-        },
-        disconnect () {
-            this.connectButtonDisable = false
-            this.disconnectButtonDisable = false
-            this.$emit('disconnect', this.peer.toUserId)
-        },
         failed (e, message) {
             console.log(e)
             alert(message)
+            this.overlay = false
         },
         resetImgURL (obj) {
-            obj.showPreviewImg = false
-            obj.imgURL = null
-            obj.imgFile = null
+                obj.showPreviewImg = false
+                obj.imgURL = null
+                obj.imgFile = null
         },
         setImgUrlIcon () {
             this.icon.imgURL = this.user.iconUrl
@@ -122,12 +82,13 @@ export default {
         async getProfile () {
             const getProfile = `
                 query GetProfile {
-                    getProfile(id: "${this.peer.toUserId}") {
+                    getProfile(id: "${this.userId}") {
                         id
                         name
                         viewName
                         iconUrl
                         identityId
+                        description
                         createdAt
                         updatedAt
                     }
@@ -142,22 +103,64 @@ export default {
                         this.user.name= ("name" in items) ? items.name : ""
                         this.user.iconUrl = ("iconUrl" in items) ? items.iconUrl : null
                         this.user.identityId = ("identityId" in items) ? items.identityId : null
+                        this.user.description = ("description" in items) ? items.description : null
                         this.setImgUrlIcon()
                     })
             } catch (e) {
                 console.log(e)
             }
-        }
+        },
     }
 }
 </script>
-
 <style>
-.user-image-small {
-    max-width: 45px;
-    width: 20vw;
-    height: auto;
-    border-radius: 50%;
-    border: 3px var(--text-color-main) solid;
+.user-banner-container-small {
+    width: 100%;
+    max-width: 900px;
+}
+.user-info-first-small {
+    display: flex;
+    align-items: center;
+    padding: 3px 12px;
+}
+.user-link-small {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    text-decoration: none;
+    padding: 5px;
+    color: white;
+}
+.user-viewName {
+    font-size: 1.0em;
+    width: 14em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: white;
+}
+.user-name {
+    font-size: 0.9em;
+    width: 14em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: white;
+}
+.user-name:hover,
+.user-viewName:hover {
+    color: gray;
+}
+.user-description-small {
+    font-size: 0.75em;
+    width: 100%;
+    color: white;
+}
+.user-description-small a {
+    text-decoration: underline;
+    color: white;
+}
+.user-description-small a:hover {
+    color: gray;
 }
 </style>

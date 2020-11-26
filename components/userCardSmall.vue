@@ -7,7 +7,7 @@
                     :src="icon.imgPreview"
                     alt="アイコンのプレビュー"
                     @error="resetImgURL(icon)"
-                    class="user-image-mid"
+                    class="user-image-large"
                     :max-width="100"
                     />
                 </div>

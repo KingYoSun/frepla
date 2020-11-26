@@ -35,6 +35,8 @@
                         @removeRePost="removeRePost"
                         @addLike="addLike"
                         @removeLike="removeLike"
+                        @listLike="showListLike"
+                        @listRePost="showListRePost"
                         />
                         <v-row justify="start" style="position: absolute; bottom: -32px; left: 20px;">
                             <v-icon color="grey darken-2">mdi-dots-vertical</v-icon>
@@ -57,6 +59,8 @@
                     @removeRePost="removeRePost"
                     @addLike="addLike"
                     @removeLike="removeLike"
+                    @listLike="showListLike"
+                    @listRePost="showListRePost"
                     />
                     <div v-if="post.replyFromId != null && post.replyFromId != undefined && post.replyFromId.length > 0" style="position: relative;" class="mb-8">
                         <v-row justify="start" style="position: absolute; bottom: -22px; left: 20px;">
@@ -118,6 +122,22 @@
             @removeLike="removeLike"
             />
         </v-dialog>
+        <v-dialog
+        v-model="dialogListLike"
+        max-width="800px"
+        >
+            <list-like
+            :userIds="likeIds"
+            />
+        </v-dialog>
+        <v-dialog
+        v-model="dialogListRePost"
+        max-width="800px"
+        >
+            <list-re-post
+            :userIds="likeIds"
+            />
+        </v-dialog>
     </v-container>
 </template>
 
@@ -132,6 +152,8 @@ import Post from '~/components/post.vue'
 import { updateFriend } from '~/src/graphql/mutations'
 import FormPost from '~/components/form/formPost.vue'
 import Thread from '~/components/thread.vue'
+import ListLike from '~/components/listLike.vue'
+import ListRePost from '~/components/listRePost.vue'
 
 export default {
     components: {
@@ -139,7 +161,9 @@ export default {
         VuetifyLogo,
         Post,
         FormPost,
-        Thread
+        Thread,
+        ListLike,
+        ListRePost
     },
     data () {
         return {
@@ -166,8 +190,12 @@ export default {
             indent: 0,
             dialogReply: false,
             dialogThread: false,
+            dialogListLike: false,
+            dialogListRePost: false,
             replyToPost: {},
             threadPost: {},
+            likeIds: [],
+            rePostIds: [],
             offset: 0,
         }
     },
@@ -256,6 +284,20 @@ export default {
             handler: function(updated, old) {
                 if(!updated) {
                     this.resetPost()
+                }
+            }
+        },
+        dialogListLike: {
+            handler: function(updated, old) {
+                if(!updated) {
+                    this.likeIds = []
+                }
+            }
+        },
+        dialogListRePost: {
+            handler: function(updated, old) {
+                if(!updated) {
+                    this.rePostIds = []
                 }
             }
         }
@@ -502,6 +544,14 @@ export default {
         showThread (post) {
             this.threadPost = post
             this.dialogThread = true
+        },
+        showListLike (post) {
+            this.likeIds = post.like
+            this.dialogListLike = true
+        },
+        showListRePost (post) {
+            this.rePostIds = post.rePost
+            this.dialogListRePost = true
         },
         async getProfile () {
             await this.getCurrentUserInfo()

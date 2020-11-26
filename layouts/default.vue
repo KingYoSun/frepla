@@ -86,7 +86,7 @@
                 <v-card>
                     <v-card-title class="justify-center">接続情報</v-card-title>
                     <v-list-item v-for="(peer, index) in $store.state.connected" :key="index">
-                        <user-card-row
+                        <user-card-connect-row
                         :peer="peer"
                         @connect="connectFriend"
                         @disconnect="disconnectFriend"
@@ -94,7 +94,7 @@
                         />
                     </v-list-item>
                     <v-list-item v-for="(peer, index) in $store.state.unconnected" :key="index">
-                        <user-card-row
+                        <user-card-connect-row
                         :peer="peer"
                         @connect="connectFriend"
                         @disconnect="disconnectFriend"
@@ -123,12 +123,12 @@ import API, { graphqlOperation } from '@aws-amplify/api'
 import { AmplifyEventBus } from 'aws-amplify-vue'
 import * as Common from '~/assets/js/common.js'
 import WebRTC from '~/assets/js/webrtc.js'
-import UserCardRow from '~/components/userCardRow.vue'
+import UserCardConnectRow from '~/components/userCardConnectRow.vue'
 import { MyDatabase } from '~/assets/ts/myDatabase'
 
 export default {
     components: {
-        UserCardRow
+        UserCardConnectRow
     },
     data () {
         return {
