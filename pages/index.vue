@@ -120,11 +120,13 @@
             @removeRePost="removeRePost"
             @addLike="addLike"
             @removeLike="removeLike"
+            @listLike="showListLike"
+            @listRePost="showListRePost"
             />
         </v-dialog>
         <v-dialog
         v-model="dialogListLike"
-        max-width="800px"
+        max-width="600px"
         >
             <list-like
             :userIds="likeIds"
@@ -132,7 +134,7 @@
         </v-dialog>
         <v-dialog
         v-model="dialogListRePost"
-        max-width="800px"
+        max-width="600px"
         >
             <list-re-post
             :userIds="likeIds"

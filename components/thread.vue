@@ -14,6 +14,8 @@
             @removeRePost="removeRePost"
             @addLike="addLike"
             @removeLike="removeLike"
+            @listLike="listLike"
+            @listRePost="listRePost"
             />
         </v-list-item>
         <v-divider />
@@ -30,6 +32,8 @@
                     @removeRePost="removeRePost"
                     @addLike="addLike"
                     @removeLike="removeLike"
+                    @listLike="listLike"
+                    @listRePost="listRePost"
                     />
                 </v-list-item>
             </div>
@@ -145,6 +149,12 @@ export default {
         },
         removeLike (post) {
             this.$emit("removeLike", post)
+        },
+        listLike (post) {
+            this.$emit("listLike", post)
+        },
+        listRePost (post) {
+            this.$emit("listRePost", post)
         },
     }
 }
