@@ -3,7 +3,7 @@
         <v-card-title class="justify-start">リポストした人を表示</v-card-title>
         <v-divider />
         <v-divider />
-        <div v-for="(userId, index) in userIds" :key="index">
+        <div v-for="(userId, index) in userIds.slice(0, 20)" :key="index">
             <v-list-item>
                 <user-card-row
                 :userId="userId"
